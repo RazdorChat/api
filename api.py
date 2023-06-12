@@ -61,17 +61,8 @@ async def close_db(app, loop):
     _db.pool.close()
 
 
-async def main():
-    server = await app.create_server(host='localhost', port=42042, debug=True, access_log=False, return_asyncio_server=True)
-    if server is None:
-        return
-
-    await server.startup()
-    await server.serve_forever()
-
-
 if __name__ == '__main__':
-    _app.go_fast(host='localhost', port=42042, debug=True, access_log=True)
+    _app.go_fast(host='0.0.0.0', port=1234, debug=False, access_log=True)
     #try:
     #    set_event_loop(new_event_loop())
     #    run(main())
