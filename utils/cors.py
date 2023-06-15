@@ -5,11 +5,11 @@ from typing import Dict, FrozenSet
 from sanic import response
 from sanic.router import Route
 
-def _add_cors_headers(response, methods: Iterable[str], origins: list | bool = None) -> None: # This is on startup to enable OPTIONS for
+def _add_cors_headers(response, methods: Iterable[str], origins: str | bool = None) -> None: # This is on startup to enable OPTIONS for
     allow_methods = list(set(methods))
     headers = {
         "Access-Control-Allow-Methods": ",".join(allow_methods),
-        "Access-Control-Allow-Origin": ",".join(origins) if origins else "*",
+        "Access-Control-Allow-Origin": "".join(origins) if origins else "*",
         "Access-Control-Allow-Credentials": "true",
         "Access-Control-Allow-Headers": (
             "origin, content-type, "

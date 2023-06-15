@@ -1,8 +1,17 @@
+from utils import db # BUG: LINUX SEGFAULT BECAUSE MARIADB CONNECTOR IS GAY
+
+ssl = {
+    'cert': './fullchain.pem',
+    'key': './privkey.pem'
+} # ADD YOUR SSL HERE
+
 from sanic import Sanic
+from sanic_ext import Extend
+
 
 # TODO: REMOVE, PRE BETA STUFF
 from sanic.response import text
-ACCESS_TOKENS = ["56748467863985672345467"]
+ACCESS_TOKENS = ["ACCESS_TOKENS"]
 
 from json import loads
 from asyncio import Queue
@@ -11,14 +20,16 @@ from asyncio import Queue
 from blueprints.group import api
 
 # UTILS #
-from utils import db, redis, hashing, sse, cors
+from utils import redis, hashing, sse, cors
 
 # Load configs
 with open("server_data/origins.json", "r") as data:
     origins = loads(data.read())['list']
 
 # Webserver
-_app = Sanic(__name__)
+_app = Sanic("API")
+_app.config.CORS_ORIGINS = origins
+_app.config.FORWARDED_SECRET = "YOUR_SECRET" #TODO: do i even need this?
 
 # Add OPTIONS handlers to any route that is missing it for CORS
 _app.register_listener(cors.setup_options, "before_server_start")
@@ -39,22 +50,18 @@ _app.blueprint(api)
 # Inject everything needed.
 @_app.on_request
 async def setup_connection(request):
-    if not request.headers.betatoken:
-        return text("Missing betatoken header")
-    if request.headers.betatoken not in ACCESS_TOKENS:
-        return text("You do not have access to this pre-beta API or your code is wrong.")
+#    if "docs" in request.route.path:
+#        pass
+#    else:
+#        if not request.headers.betatoken:
+#                return text("Missing betatoken header")
+#        if request.headers.betatoken not in ACCESS_TOKENS:
+#                return text("You do not have access to this pre-beta API or your code is wrong.")
     request.ctx.db = _db
     request.ctx.redis = _redis
     request.ctx.hasher = _hasher
     request.ctx.sse = _sse
 
-# CORS
-@_app.on_response
-async def custom_banner(request, response):
-    try:
-        cors.add_cors_headers(request, response, origins)
-    except Exception as e:
-        print(e)
 # Close the DB on exit
 @_app.main_process_stop
 async def close_db(app, loop):
@@ -62,9 +69,6 @@ async def close_db(app, loop):
 
 
 if __name__ == '__main__':
-    _app.go_fast(host='0.0.0.0', port=1234, debug=False, access_log=True)
-    #try:
-    #    set_event_loop(new_event_loop())
-    #    run(main())
-    #except KeyboardInterrupt:
-    #    exit(0)
+    Extend(_app)
+    _app.go_fast(host='localhost', port=42042,debug=False, access_log=True)
+    #_app.go_fast(host='0.0.0.0', port=1234, debug=False, access_log=True)

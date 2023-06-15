@@ -2,11 +2,14 @@ from sanic.blueprints import Blueprint
 from websockets.exceptions import ConnectionClosed
 from json import loads
 
+from sanic_ext import openapi
+
+
 from models.events import Event
 from utils import checks
 
 # Create the main blueprint to work with
-blueprint = Blueprint('Events_API', url_prefix="/events")
+blueprint = Blueprint('Events', url_prefix="/events")
 
 
 ## THIS IS LEGACY CODE, YOU SHOULD BE USING THE GOLANG WS SERVER ##
@@ -36,8 +39,14 @@ def format(raw_event_data, conn_ref: int, delim: str = "\n"): # This code is wac
         raise FormatError("No destination.")
     return Event(split[0].split(":", 1)[1], conn_ref, destination[1], destination[0], loaded_json)
 
+
+
 @blueprint.websocket('/ws')
-async def feed(request, ws):
+@openapi.exclude(False)
+@openapi.summary("Live events with WS.")
+@openapi.parameter(name="Authorization", schema=str, location="header", required=True)
+@openapi.parameter(name="Author",        schema=str, location="header", required=True)
+async def ws_recv(request, ws):
     try:
         if not request.headers.author or not request.headers.authorization or not request.headers: # Doesnt have the required headers.
             return await close(ws, "error: missing headers") # Missing headers
@@ -70,3 +79,4 @@ async def feed(request, ws):
     finally:
         await request.ctx.sse.unregister(int(user_id)) # Unregister the client.
 
+openapi.exclude(ws_recv)

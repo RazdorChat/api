@@ -19,7 +19,7 @@ class SSE: # TODO: rename to event handler
 			case "dmchannel":
 				connections = self.db.query("SELECT user_id FROM dmchannelusers WHERE parent_id = ?", destination)
 			case "user":
-				connections = self.db.query("SELECT user_id FROM users WHERE parent_id = ?", destination)
+				connections = self.db.query("SELECT id FROM users WHERE id = ?", destination)
 			case _:
 				raise Exception("Something went wrong matching the correct destination.")
 		print(f"Destination: {destination}")

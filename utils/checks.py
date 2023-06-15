@@ -11,10 +11,11 @@ valid_events = {
 }
 
 def authenticated(given_auth_key: bytearray, real_auth_key: bytearray): # Helper tool to make sure a client has been given an auth key and it matches their real one.
+    result = compare_digest(given_auth_key, real_auth_key)
     return compare_digest(given_auth_key, real_auth_key)
     
 
-def check_impersonation(redis_conn, given_author_id, real_author_id): # Helper tool to make sure a client can do changing things.
+def check_impersonation(redis_conn, given_author_id, real_author_id): # fresh from my ass, legacy code, i was high as fuck writing this and i dont even know where i was going
     real_token = redis_conn.get(real_author_id)
     check_token = redis_conn.get(given_author_id)
     if not real_token or not check_token:

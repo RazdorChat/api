@@ -25,6 +25,6 @@ def generate_session_token(redis_conn, author_id):
 def get_session_token(redis_conn, author_id):
     data = redis_conn.get(author_id)
     if not data:
-        return False
+        return "fake_data_none"
     return data
 
