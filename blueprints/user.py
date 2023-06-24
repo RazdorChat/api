@@ -36,8 +36,8 @@ def user_get(request, thread_id):
 @openapi.summary("User create")
 @openapi.description("Create a user.")
 @openapi.response(200, {"application/json" : ops.UserCreated})
-@openapi.response(200, {"application/json" : ops.MissingJson})
-@openapi.response(200, {"application/json" : ops.MissingRequiredJson})
+@openapi.response(400, {"application/json" : ops.MissingJson})
+@openapi.response(400, {"application/json" : ops.MissingRequiredJson})
 @openapi.response(401, {"application/json" : ops.Unauthorized})
 def user_create(request):
     db = request.ctx.db
@@ -62,8 +62,8 @@ def user_create(request):
 @openapi.description("Send friend request to user from ID.")
 @openapi.response(200, {"application/json" : ops.Sent})
 @openapi.response(404, {"application/json" : ops.Void})
-@openapi.response(200, {"application/json" : ops.MissingJson})
-@openapi.response(200, {"application/json" : ops.MissingRequiredJson})
+@openapi.response(400, {"application/json" : ops.MissingJson})
+@openapi.response(400, {"application/json" : ops.MissingRequiredJson})
 @openapi.response(401, {"application/json" : ops.Unauthorized})
 def user_friend_add(request, thread_id):
     db = request.ctx.db
@@ -90,7 +90,7 @@ def user_friend_add(request, thread_id):
 @openapi.summary("User relationship")
 @openapi.description("Gets all relationships of a user.")
 @openapi.response(200, {"application/json" : {"op": list[ops.Relationship]}})
-@openapi.response(200, {"application/json" : ops.MissingJson})
+@openapi.response(400, {"application/json" : ops.MissingJson})
 @openapi.response(404, {"application/json" : ops.Void})
 @openapi.response(401, {"application/json" : ops.Unauthorized})
 def user_relationships(request, thread_id):
@@ -125,8 +125,8 @@ def user_relationships(request, thread_id):
 @openapi.description("Accept friend requests.")
 @openapi.response(200, {"application/json" : ops.Done.op})
 @openapi.response(200, {"application/json" : ops.AlreadyAdded.op})
-@openapi.response(200, {"application/json" : ops.MissingJson})
-@openapi.response(200, {"application/json" : ops.MissingRequiredJson})
+@openapi.response(400, {"application/json" : ops.MissingJson})
+@openapi.response(400, {"application/json" : ops.MissingRequiredJson})
 @openapi.response(404, {"application/json" : ops.Void})
 @openapi.response(401, {"application/json" : ops.Unauthorized})
 def user_friend_accept(request):
@@ -158,8 +158,8 @@ def user_friend_accept(request):
 @openapi.summary("User delete")
 @openapi.description("Deletes a user.")
 @openapi.response(200, {"application/json" : ops.Deleted})
-@openapi.response(200, {"application/json" : ops.MissingJson})
-@openapi.response(200, {"application/json" : ops.MissingRequiredJson})
+@openapi.response(400, {"application/json" : ops.MissingJson})
+@openapi.response(400, {"application/json" : ops.MissingRequiredJson})
 @openapi.response(401, {"application/json" : ops.Unauthorized})
 def user_delete(request, thread_id):
     db = request.ctx.db
@@ -185,8 +185,8 @@ def user_delete(request, thread_id):
 @openapi.summary("User authkey")
 @openapi.description("Generate an auth key for a user.") # Aka logging in.
 @openapi.response(200, {"application/json" : ops.UserAuthkeyCreated})
-@openapi.response(200, {"application/json" : ops.MissingJson})
-@openapi.response(200, {"application/json" : ops.MissingRequiredJson})
+@openapi.response(400, {"application/json" : ops.MissingJson})
+@openapi.response(400, {"application/json" : ops.MissingRequiredJson})
 @openapi.response(404, {"application/json" : ops.Void})
 @openapi.response(401, {"application/json" : ops.Unauthorized})
 def user_authkey(request, thread_id):
