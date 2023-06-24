@@ -13,6 +13,7 @@ class SSE: # TODO: rename to event handler
 		self.db = db
 
 	def get_correct_connections(self, destination, destination_type, sending_conn_ref):
+		""" This gets the correct connections to send the event to, that way we arent sending events to people who should not be getting them, for example: someone receiving a message for a server they arent in at all. """
 		match destination_type: # Since the destination is where the event is happening, we can just grab all users from the destination.
 			case "guild":
 				connections = self.db.query("SELECT user_id FROM guildusers WHERE parent_id = ?", destination)
