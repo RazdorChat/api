@@ -1,0 +1,5 @@
+{
+    "user": "MARIADB_USER",
+    "password": "USER_PASSWORD",
+    "database": "DATABASE_NAME"
+}
