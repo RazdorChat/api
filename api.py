@@ -6,6 +6,7 @@ ssl = {
 } # ADD YOUR SSL HERE
 
 from sanic import Sanic
+from sanic.response import html
 from sanic_ext import Extend
 
 
@@ -41,6 +42,7 @@ _redis = redis.RDB
 _hasher = hashing.Hasher()
 _sse = sse.SSE(Queue(), _db)
 _app.add_task(_sse.event_push_loop) # Make sure we run the event pusher, or nobody will be getting events
+# TODO: put SSE in event, its causing CPU usage issues.
 
 # Add all the blueprints
 
@@ -61,6 +63,15 @@ async def setup_connection(request):
     request.ctx.redis = _redis
     request.ctx.hasher = _hasher
     request.ctx.sse = _sse
+
+# TODO: disable in selfhosting / production
+_temp = open("index.html", "r")
+landing_page = _temp.read()
+_temp.close()
+
+@_app.route("/")
+def index(request):
+    return html(landing_page)
 
 # Close the DB on exit
 @_app.main_process_stop
