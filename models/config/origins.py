@@ -1,0 +1,3 @@
+schema = {
+    "list" : {"type": "list"},
+}

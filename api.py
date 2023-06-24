@@ -15,6 +15,7 @@ from sanic.response import text
 ACCESS_TOKENS = ["ACCESS_TOKENS"]
 
 from json import loads
+from os import path, remove
 from asyncio import Queue
 
 # BLUEPRINTS #
@@ -25,11 +26,33 @@ from utils import redis, hashing, sse, cors
 
 # Load configs
 with open("server_data/origins.json", "r") as data:
-    origins = loads(data.read())['list']
+    _origins = loads(data.read())['list']
+with open("server_data/config.json", "r") as data:
+    _config = loads(data.read())
+
+# Validate configs / Check for first run
+if path.isfile("FIRSTRUNDONTTOUCH"):
+    try:
+        input("FIRST RUN, VALIDATING CONFIGS: PRESS ENTER TO CONTINUE OR CRTL+C AND FILL THEM OUT IF YOU HAVNT FILLED THEM OUT.")
+    except KeyboardInterrupt:
+        exit(0)
+    from jsonschema import validate
+    from models.config import config, origins
+    for x in[(_config, config.schema), (origins, origins.schema)]: # This is bullshit, i know.
+        try:
+            validate(instance=x[0], schema=x[1])
+        except:
+            print("Exception validating config (JSON). Please check the configs.")
+            exit(0)
+    print("Validated files.")
+    print("Removing first run file.")
+    remove("FIRSTRUNDONTTOUCH")
+    print("Starting...")
+
 
 # Webserver
 _app = Sanic("API")
-_app.config.CORS_ORIGINS = origins
+_app.config.CORS_ORIGINS = _origins
 _app.config.FORWARDED_SECRET = "YOUR_SECRET" #TODO: do i even need this?
 
 # Add OPTIONS handlers to any route that is missing it for CORS
@@ -64,14 +87,14 @@ async def setup_connection(request):
     request.ctx.hasher = _hasher
     request.ctx.sse = _sse
 
-# TODO: disable in selfhosting / production
-_temp = open("index.html", "r")
-landing_page = _temp.read()
-_temp.close()
+if _config["api_landing_page"] == True:
+    _temp = open(_config["api_landing_page_location"], "r") # TODO: check if exists
+    landing_page = _temp.read()
+    _temp.close()
 
-@_app.route("/")
-def index(request):
-    return html(landing_page)
+    @_app.route("/")
+    def index(request):
+        return html(landing_page)
 
 # Close the DB on exit
 @_app.main_process_stop

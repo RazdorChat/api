@@ -1,0 +1,5 @@
+{
+    "selfhosting": false,
+    "api_landing_page": true,
+    "api_landing_page_location": "index.html"
+}
