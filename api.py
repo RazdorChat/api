@@ -24,6 +24,11 @@ from blueprints.group import api
 # UTILS #
 from utils import redis, hashing, sse, cors
 
+# Make sure configs exist.
+if not path.isfile("server_data/db.json") or not path.isfile("server_data/origins.json") or not path.isfile("server_data/config.json"):
+    print("Please rename and fill out the example configs in server_data.")
+    exit(0)
+
 # Load configs
 with open("server_data/origins.json", "r") as data:
     _origins = loads(data.read())['list']
