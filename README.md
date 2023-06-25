@@ -1,10 +1,11 @@
 # razdor.chat API
 The readme is being worked on.
 Documentation @ http://razdor.chat/docs/swagger
+Examples @ https://github.com/RazdorChat/examples
 
 # Help
 Feel free to fork and add some changes, then do a pr.
-Discord link (ironic, i know) is on the official website: http://razdor.chat
+Discord link (ironic, i know) is on the official website: https://razdor.chat
 
 All config data left over from testing should be changed, along with the access key.
 
