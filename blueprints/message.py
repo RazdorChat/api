@@ -22,25 +22,24 @@ blueprint = Blueprint('Message', url_prefix="/message")
 valid_dest_types = {
     "dmchannel": "SELECT * FROM messages WHERE DMChannelID = ? AND id = ?",
     "channel":  "SELECT * FROM messages WHERE channelID = ? AND id = ?",
-    "user":  "SELECT * FROM messages WHERE userID = ? AND id = ?",
+    "user":  "SELECT * FROM messages WHERE userID = ? AND (userID = ? or authorID = ?) AND id = ?",
     "mass": {
         "dmchannel": "SELECT * FROM messages WHERE DMChannelID = ? ORDER BY (`sent_timestamp`=0) DESC,`sent_timestamp` DESC LIMIT 100",
         "channel":  "SELECT * FROM messages WHERE channelID = ? ORDER BY (`sent_timestamp`=0) DESC,`sent_timestamp` DESC LIMIT 100",
-        "user":  "SELECT * FROM messages WHERE userID = ? ORDER BY (`sent_timestamp`=0) DESC,`sent_timestamp` DESC LIMIT 100"
+        "user":  "SELECT * FROM messages WHERE userID = ? AND (userID = ? or authorID = ?) ORDER BY (`sent_timestamp`=0) DESC,`sent_timestamp` DESC LIMIT 100"
     }
 }
 
 
-@blueprint.get("/<thread_id:int>/get/<message_id:int>/<thread_type:str>", strict_slashes=True, ignore_body=False)
+@blueprint.get("/<thread_type:str>/<thread_id:int>/get/<message_id:int>", strict_slashes=True, ignore_body=False)
 @openapi.description("Fetches a message from a channel or DM.")
 @openapi.response(200, {"application/json" : message.Message})
 @openapi.response(400, {"application/json" : ops.MissingRequiredJson})
 @openapi.response(400, {"application/json" : ops.MissingJson})
 @openapi.response(400, {"application/json" : {"op": "Invalid thread type."}}) # TODO: convert to ops formatting like normal.
 @openapi.response(404, {"application/json" : ops.Void})
-def message_get(request, thread_id, message_id, thread_type):
+def message_get(request, thread_type, thread_id, message_id):
     db = request.ctx.db
-    channel_or_user = thread_id # For readability 
 
     
     if thread_type not in valid_dest_types:
@@ -102,7 +101,7 @@ def message_delete(request, thread_id, message_id):
 @openapi.response(200, {"application/json" : ops.Sent})
 @openapi.response(400, {"application/json" : {"op": "Invalid thread type."}}) # TODO: convert to ops formatting like normal.
 @openapi.response(400, {"application/json" : ops.MissingJson})
-@openapi.response(404, {"application/json" : ops.Void})
+@openapi.response(400, {"application/json" : ops.MissingRequiredJson})
 @openapi.response(401, {"application/json" : ops.Unauthorized})
 async def message_send(request, thread_type, thread_id):
     db = request.ctx.db
@@ -115,10 +114,10 @@ async def message_send(request, thread_type, thread_id):
     if not data:
         return json({"op": ops.MissingJson.op})
     if not all(k in data for k in ("requester","content", "auth")):
-        return json({"op": ops.MissingRequiredJson})
+        return json({"op": ops.MissingRequiredJson.op})
 
     if not checks.authenticated(request.json["auth"], id_generator.get_session_token(request.ctx.redis, data['requester'])): # Client is trying to send a message as a user they are not, or their auth is wrong.
-        return json({"op": ops.Unauthorized}, status=401)
+        return json({"op": ops.Unauthorized.op}, status=401)
 
     _id = id_generator.generate_message_id(db) # Generate the UID  
 
@@ -151,16 +150,48 @@ async def message_send(request, thread_type, thread_id):
     )
 
 
-@blueprint.get("/<thread_type:str>/<thread_id:int>/messages", strict_slashes=True)
+@blueprint.get("/<thread_type:str>/<thread_id:int>/messages", strict_slashes=True, ignore_body=False)
+@openapi.body({"application/json": {"auth": str, "requester": int}})
 @openapi.description("Fetches messages from a channel or DM.")
 @openapi.response(400, {"application/json" : {"op": "Invalid thread type."}}) # TODO: convert to ops formatting like normal.
 @openapi.response(200, {"application/json" : {"msgs": list[message.Message]}})
+@openapi.response(400, {"application/json" : ops.MissingJson})
+@openapi.response(400, {"application/json" : ops.MissingRequiredJson})
+@openapi.response(401, {"application/json" : ops.Unauthorized})
+@openapi.response(404, {"application/json" : ops.Void})
 def message_mass_get(request, thread_type, thread_id):
     db = request.ctx.db
-    if thread_type not in valid_dest_types:
+    if thread_type not in valid_dest_types["mass"]:
         return json({"op": "Invalid thread type."})
 
-    data = db.query(valid_dest_types["mass"][thread_type], thread_id)
+    data = request.json
+    if not data:
+        return json({"op": ops.MissingJson.op})
+    if not all(k in data for k in ("requester", "auth")):
+        return json({"op": ops.MissingRequiredJson.op})
 
+    if not checks.authenticated(request.json["auth"], id_generator.get_session_token(request.ctx.redis, request.json["requester"])): # Client is trying to send a message as a user they are not, or their auth is wrong.
+        return json({"op": ops.Unauthorized.op}, status=401)
 
-    return json({"msgs": data})
+    _data = db.query(valid_dest_types["mass"][thread_type], thread_id, thread_id, request.json["requester"])
+
+    if not _data:
+        return json({"op": ops.Void.op}, status=404)
+
+    messages = []
+
+    for msg in _data:
+        _dest = [msg['userID'], msg['DMChannelID'], msg['channelID']]
+        dest = [x for x in _dest if x != None]
+        messages.append({
+            "id": msg['id'],
+            "author": msg['authorID'],
+            "thread": dest[0],
+            "content": msg['content'],
+            "timestamp": msg['sent_timestamp'] 
+        })
+
+    if len(messages) == 0:
+        return json({"op": ops.Void.op}, status=404)
+
+    return json({"msgs": messages})
