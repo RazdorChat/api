@@ -42,7 +42,6 @@ class UserCreated:
 @dataclass
 class UserAuthkeyCreated:
     op = "Created."
-    authentication: str
     id: int
 
 
