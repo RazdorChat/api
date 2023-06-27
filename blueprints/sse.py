@@ -63,16 +63,14 @@ async def ws_recv(request, ws):
             raw_event_data = await ws.recv() # Connection has sent a new event.
             if not checks.is_valid_event(raw_event_data):
                 await ws.send("error: invalid event")
-            # TODO: uncomment the below
-            #try:
             else:
-                event = format(raw_event_data, int(user_id))
-                await request.ctx.sse.register_event(event) # Put the new event in the queue to send to other connections.
-            #except Exception as e:
-            #    print(f"Error registering event\n{e}")
-            #except FormatError as e:
-            #    await ws.send(Event("error", -1, {"error": f"{e.message}"}))
-            #finally:
+                try:
+                    event = format(raw_event_data, int(user_id))
+                    await request.ctx.sse.register_event(event) # Put the new event in the queue to send to other connections.
+                except FormatError as e:
+                    await ws.send(Event("error", -1, {"error": f"{e.message}"}))
+                except Exception as e:
+                    print(f"Error registering event\n{e}")
             await ws.send("done")
     except ConnectionClosed:
         pass
