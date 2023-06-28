@@ -9,7 +9,7 @@ class DiscordWebhook:
 
     def send(self, content: str, title: str):
         data = { # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
-            "username" : "custom username"
+            "username" : self.username
         }
         data["embeds"] = [ # https://discordapp.com/developers/docs/resources/channel#embed-object
             {
@@ -18,7 +18,7 @@ class DiscordWebhook:
             }
         ]
         result = requests.post(self.url, json = data)
-        
+
         result.raise_for_status()
         
         return True
