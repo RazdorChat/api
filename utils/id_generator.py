@@ -11,18 +11,17 @@ def generate_user_id(db_conn):
 
 def generate_user_discrim(db_conn, username):
     check = db_conn.query("SELECT discrim FROM users WHERE _name = ?", username)
-    if check != None: # There are available discrims
-        _discrims = list(map(int, check))
+    if len(check) == 9999: # The username has hit its limit for discriminators
+        _max = int(f"{str(len(check))}9") # Up the character limit +1
+    elif check != None and len(check) != 0: # There are available discrims
+        _discrims = [int(x) for x in check]
         _max = max(_discrims)
-    elif len(check) == 9999: # The username has hit its limit for discriminators
-        _max = f"{str(len(check))}9" # Up the character limit +1
-    else: # Nobody has used the username before, start out on the minimum for 4 char discrims
+    elif check == None or len(check) == 0: # Nobody has used the username before, start out on the minimum for 4 char discrims
         _max = 9999 # Max combinations for 4 character discriminators
     while 1:
         _discrim = randint(1000, _max) # Minimum of 4 char discrims
         if _discrim == 1000:
             _discrim = '0001' # Congrats, you got a really rare discrim :)
-        print(_discrim)
         if _discrim not in db_conn.query("SELECT _name FROM users WHERE discrim = ?", _discrim): # username + discrim combo isnt taken
             return _discrim
 
