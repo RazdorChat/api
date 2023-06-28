@@ -22,6 +22,8 @@ from asyncio import Queue
 import traceback
 from datetime import datetime
 from time import mktime
+from sanic.response import HTTPResponse
+
 
 # BLUEPRINTS #
 from blueprints.group import api
@@ -102,6 +104,7 @@ async def catch_everything(request, exception):
                 # TODO: describe error more
         f.write(to_write)
         f.close()
+    return HTTPResponse("Something happened internally, it has been reported and we will fix the error asap.", 500) 
 
 
 
