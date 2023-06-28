@@ -18,6 +18,11 @@ from json import loads
 from os import path, remove
 from asyncio import Queue
 
+# ERROR HANDLING #
+import traceback
+from datetime import datetime
+from time import mktime
+
 # BLUEPRINTS #
 from blueprints.group import api
 
@@ -76,6 +81,17 @@ _app.add_task(_sse.event_push_loop) # Make sure we run the event pusher, or nobo
 
 # Api (V1)
 _app.blueprint(api)
+
+# Error handler
+@_app.exception(Exception)
+async def catch_everything(request, exception):
+    # TODO: work on this more, i dont know how sanic errors work and how to isinstance them
+    unix_time = mktime(datetime.now().timetuple())
+    _traceback = traceback.extract_tb(exception.__traceback__)
+    with open(f"errors/{unix_time}.txt", "w+") as f:
+        to_write = f"exception: {str(exception)}\ntraceback:\n{str(_traceback)}"
+        f.write(to_write)
+        f.close()
 
 # Inject everything needed.
 @_app.on_request
