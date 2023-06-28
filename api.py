@@ -27,7 +27,7 @@ from time import mktime
 from blueprints.group import api
 
 # UTILS #
-from utils import redis, hashing, sse, cors
+from utils import redis, hashing, sse, cors, discord_legacy_webhook
 
 # Make sure configs exist.
 if not path.isfile("server_data/db.json") or not path.isfile("server_data/origins.json") or not path.isfile("server_data/config.json"):
@@ -39,6 +39,9 @@ with open("server_data/origins.json", "r") as data:
     _origins = loads(data.read())['list']
 with open("server_data/config.json", "r") as data:
     _config = loads(data.read())
+with open("server_data/discord_legacy_webhooks.json", "r") as data:
+    _discord_webhooks = loads(data.read()) # How ironic
+
 
 # Validate configs / Check for first run
 if path.isfile("FIRSTRUNDONTTOUCH"):
@@ -47,7 +50,7 @@ if path.isfile("FIRSTRUNDONTTOUCH"):
     except KeyboardInterrupt:
         exit(0)
     from jsonschema import validate
-    from models.config import config, origins
+    from models.config import config, origins, webhooks
     for x in[(_config, config.schema), (origins, origins.schema)]: # This is bullshit, i know.
         try:
             validate(instance=x[0], schema=x[1])
@@ -90,8 +93,17 @@ async def catch_everything(request, exception):
     _traceback = traceback.extract_tb(exception.__traceback__)
     with open(f"errors/{unix_time}.txt", "w+") as f:
         to_write = f"exception: {str(exception)}\ntraceback:\n{str(_traceback)}"
+        if _discord_webhooks["enabled"] == True:
+            webhook = discord_legacy_webhook.DiscordWebhook(_discord_webhooks["error"], "API Error")
+            try:
+                webhook.send(str(_traceback), str(exception))
+            except Exception as e:
+                to_write += f"\nwebhook: {str(e)}" # Probably a bad webhook
+                # TODO: describe error more
         f.write(to_write)
         f.close()
+
+
 
 # Inject everything needed.
 @_app.on_request
@@ -116,6 +128,7 @@ if _config["api_landing_page"] == True:
     @_app.route("/")
     def index(request):
         return html(landing_page)
+    
 
 # Close the DB on exit
 @_app.main_process_stop
