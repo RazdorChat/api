@@ -43,6 +43,7 @@ class UserCreated:
 class UserAuthkeyCreated:
     op = "Created."
     id: int
+    authentication: str
 
 
 
