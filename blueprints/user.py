@@ -201,7 +201,7 @@ def user_authkey_id(request, user_id):
     if not "auth" in _json:
         return json({"op": ops.MissingRequiredJson.op})
 
-    data = db.query_row("SELECT authentication, salt, created_at FROM users WHERE id = ?" , user)
+    data = db.query_row("SELECT id, authentication, salt, created_at FROM users WHERE id = ?" , user)
     if not data:
         return json({"op": ops.Void.op}, status=404) # it doesnt exist
 
@@ -212,7 +212,7 @@ def user_authkey_id(request, user_id):
     
     elif check == True: # the hash matches
         key = id_generator.generate_session_token(request.ctx.redis, user)
-        return json({"op": ops.UserAuthkeyCreated.op, "authentication": key})
+        return json({"op": ops.UserAuthkeyCreated.op, "id": data['id'], "authentication": key})
 
 @blueprint.post("/<username:str>/<discriminator:str>/authkey", strict_slashes=True) # TODO: make one endpoint
 @openapi.body({"application/json": {"auth": str}})
@@ -232,7 +232,7 @@ def user_authkey(request, username, discriminator):
     if not "auth" in _json:
         return json({"op": ops.MissingRequiredJson.op})
 
-    data = db.query_row("SELECT authentication, salt, created_at FROM users WHERE username = ? AND discrim = ?" , username, discriminator)
+    data = db.query_row("SELECT id, authentication, salt, created_at FROM users WHERE _name = ? AND discrim = ?" , username, discriminator)
     if not data:
         return json({"op": ops.Void.op}, status=404) # it doesnt exist
 
@@ -242,5 +242,5 @@ def user_authkey(request, username, discriminator):
         return json({"op": ops.Unauthorized.op}, status=401)
     
     elif check == True: # the hash matches
-        key = id_generator.generate_session_token(request.ctx.redis, user)
-        return json({"op": ops.UserAuthkeyCreated.op, "authentication": key})
+        key = id_generator.generate_session_token(request.ctx.redis, data['id'])
+        return json({"op": ops.UserAuthkeyCreated.op, "id": data['id'], "authentication": key})
