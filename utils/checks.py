@@ -2,12 +2,13 @@ from secrets import compare_digest
 
 valid_events = {
     "new_message",
-    "edit_message",
-    "delete_message",
-    "friend_request",
-    "friend_request_reply",
-    "friend_remove",
-    "user_edit"
+    "edit_message", # TODO: ADD
+    "delete_message", # TODO: ADD
+    "friend_request", # TODO: ADD
+    "friend_request_reply", # TODO: ADD
+    "friend_remove", # TODO: ADD
+    "user_edit", # TODO: ADD
+    "dmchannel_add"
 }
 
 def authenticated(given_auth_key: bytearray, real_auth_key: bytearray): # Helper tool to make sure a client has been given an auth key and it matches their real one.

@@ -5,6 +5,10 @@ class Void:
     op = "void"
 
 @dataclass
+class MalformedJson:
+    op = "The provided JSON was not formatted as expected."
+
+@dataclass
 class MissingJson:
     op = "Missing JSON."
 
@@ -38,6 +42,12 @@ class AlreadyAdded:
 class UserCreated:
     op = "Created."
     id: int
+
+@dataclass
+class DmChannelCreated:
+    op = "Created."
+    id: int
+
 
 @dataclass
 class UserAuthkeyCreated:
