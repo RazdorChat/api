@@ -46,7 +46,13 @@ def message_get(request, thread_type, thread_id, message_id):
         return json({"op": "Invalid thread type."})
     query = valid_dest_types[thread_type]
 
-    data = db.query_row(query, thread_id, message_id)
+    # TODO: CHECK IF USER CAN GET MESSAGES
+
+    if thread_type == "user":
+        data = db.query_row(query, thread_id, thread_id, thread_id, message_id)
+    else:
+        data = db.query_row(query, thread_id, message_id)
+    
     if not data:
         return json({"op": ops.Void.op}, status=404)
     
@@ -173,7 +179,12 @@ def message_mass_get(request, thread_type, thread_id):
     if not checks.authenticated(request.json["auth"], id_generator.get_session_token(request.ctx.redis, request.json["requester"])): # Client is trying to send a message as a user they are not, or their auth is wrong.
         return json({"op": ops.Unauthorized.op}, status=401)
 
-    _data = db.query(valid_dest_types["mass"][thread_type], thread_id, thread_id, request.json["requester"])
+    # TODO: CHECK IF USER CAN GET MESSAGES
+
+    if thread_type == "user":
+        _data = db.query_row(valid_dest_types["mass"][thread_type], thread_id, thread_id, thread_id)
+    else:
+        _data = db.query_row(valid_dest_types["mass"][thread_type], thread_id)
 
     if not _data:
         return json({"op": ops.Void.op}, status=404)
