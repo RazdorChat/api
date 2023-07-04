@@ -10,10 +10,6 @@ from sanic.response import html
 from sanic_ext import Extend
 
 
-# TODO: REMOVE, PRE BETA STUFF
-from sanic.response import text
-ACCESS_TOKENS = ["ACCESS_TOKENS"]
-
 from json import loads
 from os import path, remove
 from asyncio import Queue
@@ -23,6 +19,8 @@ import traceback
 from datetime import datetime
 from time import mktime
 from sanic.response import HTTPResponse
+from sanic.exceptions import NotFound
+
 
 
 # BLUEPRINTS #
@@ -68,7 +66,6 @@ if path.isfile("FIRSTRUNDONTTOUCH"):
 # Webserver
 _app = Sanic("API")
 _app.config.CORS_ORIGINS = _origins
-_app.config.FORWARDED_SECRET = "YOUR_SECRET" #TODO: do i even need this?
 
 # Add OPTIONS handlers to any route that is missing it for CORS
 _app.register_listener(cors.setup_options, "before_server_start")
@@ -91,6 +88,8 @@ _app.blueprint(api)
 @_app.exception(Exception)
 async def catch_everything(request, exception):
     # TODO: work on this more, i dont know how sanic errors work and how to isinstance them
+    if isinstance(exception, NotFound):
+        return HTTPResponse("URL not found.", 404)
     unix_time = mktime(datetime.now().timetuple())
     _traceback = traceback.extract_tb(exception.__traceback__)
     with open(f"errors/{unix_time}.txt", "w+") as f:
@@ -104,7 +103,7 @@ async def catch_everything(request, exception):
                 # TODO: describe error more
         f.write(to_write)
         f.close()
-    return HTTPResponse("Something happened internally, it has been reported and we will fix the error asap.", 500) 
+    return HTTPResponse("Something happened internally, it has been reported and we will fix the error as soon as possible.", 500) 
 
 
 
