@@ -125,7 +125,7 @@ async def message_send(request, thread_type, thread_id):
     if not checks.authenticated(request.json["auth"], id_generator.get_session_token(request.ctx.redis, data['requester'])): # Client is trying to send a message as a user they are not, or their auth is wrong.
         return json({"op": ops.Unauthorized.op}, status=401)
 
-    _id = id_generator.generate_message_id(db) # Generate the UID  
+    _id = id_generator.generate_message_id(db) # Generate the ID  
 
     timestamp = datetime.now().timestamp()
 

@@ -4,7 +4,7 @@ from typing import Optional
 
 @dataclass
 class Event:
-    event: str
+    event: str # TODO: change to ints
     conn_ref: int
     destination: int
     destination_type: str 
