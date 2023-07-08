@@ -1,12 +1,13 @@
 from sanic.blueprints import Blueprint
 from websockets.exceptions import ConnectionClosed
+from datetime import datetime
 from json import loads
 
 from sanic_ext import openapi
 
 
 from models.events import Event
-from utils import checks
+from utils import checks, id_generator
 
 # Create the main blueprint to work with
 blueprint = Blueprint('Events', url_prefix="/events")
@@ -66,6 +67,23 @@ async def ws_recv(request, ws):
             else:
                 try:
                     event = format(raw_event_data, int(user_id))
+                    if event.event == "new_message":
+                        if event.data["author"] != user_id:
+                            return await close(ws, "error: author ID not the same as given ID in headers") # TODO: handle better than just closing
+                        if event.destination_type == "dmchannel":
+                            dest_type = "dmchannel"
+                            query = "INSERT INTO messages (id, authorID, DMChannelID, content, sent_timestamp) VALUES (?,?,?,?,?)"
+                        elif event.destination_type == "user":
+                            dest_type = "user"
+                            query = "INSERT INTO messages (id, authorID, userID, content, sent_timestamp) VALUES (?,?,?,?,?)"
+                        elif event.destination_type == "guild":
+                            dest_type = "guild"
+                            query = "INSERT INTO messages (id, authorID, channelID, content, sent_timestamp) VALUES (?,?,?,?,?)"
+
+                        _id = id_generator.generate_message_id(request.ctx.db) # Generate the UID 
+                        timestamp = datetime.now().timestamp()
+
+                        request.ctx.db.execute(query, _id, user_id, event.data["thread"], event.data["content"], timestamp)
                     await request.ctx.sse.register_event(event) # Put the new event in the queue to send to other connections.
                 except FormatError as e:
                     await ws.send(Event("error", -1, {"error": f"{e.message}"}))
