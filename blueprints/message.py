@@ -21,8 +21,8 @@ blueprint = Blueprint('Message', url_prefix="/message")
 
 valid_dest_types = {
     "dmchannel": "SELECT * FROM messages WHERE DMChannelID = ? AND id = ?",
-    "channel":  "SELECT * FROM messages WHERE channelID = ? AND id = ?",
-    "user":  "SELECT * FROM messages WHERE userID = ? AND (userID = ? or authorID = ?) AND id = ?",
+    "channel":  "SELECT * FROM messages WHERE channelID = ? AND id = ?", # TODO: i need to seperate the DM and DMChannel tables
+    "user":  "SELECT * FROM messages WHERE (userID = ? or authorID = ?) AND id = ?",
     "mass": {
         "dmchannel": "SELECT * FROM messages WHERE DMChannelID = ? ORDER BY (`sent_timestamp`=0) DESC,`sent_timestamp` DESC LIMIT 100",
         "channel":  "SELECT * FROM messages WHERE channelID = ? ORDER BY (`sent_timestamp`=0) DESC,`sent_timestamp` DESC LIMIT 100",
@@ -49,7 +49,7 @@ def message_get(request, thread_type, thread_id, message_id):
     # TODO: CHECK IF USER CAN GET MESSAGES
 
     if thread_type == "user":
-        data = db.query_row(query, thread_id, thread_id, thread_id, message_id)
+        data = db.query_row(query, thread_id, thread_id, message_id)
     else:
         data = db.query_row(query, thread_id, message_id)
     
@@ -182,22 +182,19 @@ def message_mass_get(request, thread_type, thread_id):
     # TODO: CHECK IF USER CAN GET MESSAGES
 
     if thread_type == "user":
-        _data = db.query_row(valid_dest_types["mass"][thread_type], thread_id, thread_id, thread_id)
+        _data = db.query(valid_dest_types["mass"][thread_type], thread_id, data["requester"], thread_id)
     else:
-        _data = db.query_row(valid_dest_types["mass"][thread_type], thread_id)
+        _data = db.query(valid_dest_types["mass"][thread_type], thread_id)
 
     if not _data:
         return json({"op": ops.Void.op}, status=404)
 
     messages = []
-
     for msg in _data:
-        _dest = [msg['userID'], msg['DMChannelID'], msg['channelID']]
-        dest = [x for x in _dest if x != None]
         messages.append({
             "id": msg['id'],
             "author": msg['authorID'],
-            "thread": dest[0],
+            "thread": thread_id,
             "content": msg['content'],
             "timestamp": msg['sent_timestamp'] 
         })
