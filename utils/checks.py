@@ -10,6 +10,13 @@ valid_events = {
     "user_edit"
 }
 
+def user_exists(db_conn, given_id: int):
+    check = db_conn.query_row("SELECT id FROM users WHERE id=?", given_id)
+    if not check: # user doesnt exist
+        return False
+    else:
+        return True
+
 def authenticated(given_auth_key: bytearray, real_auth_key: bytearray): # Helper tool to make sure a client has been given an auth key and it matches their real one.
     result = compare_digest(given_auth_key, real_auth_key)
     return compare_digest(given_auth_key, real_auth_key)

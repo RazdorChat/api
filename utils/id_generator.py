@@ -32,6 +32,13 @@ def generate_message_id(db_conn):
         if not check:
             return _id
 
+def generate_dm_id(db_conn):
+    while 1:
+        _id = secrets.randbits(64)
+        check = db_conn.query_row("SELECT id FROM DMs WHERE id=?", _id)
+        if not check:
+            return _id
+
 def generate_session_token(redis_conn, author_id):
     token = redis_conn.get(author_id)
     if not token:
