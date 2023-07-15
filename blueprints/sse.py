@@ -71,13 +71,10 @@ async def ws_recv(request, ws):
                         if event.data["author"] != user_id:
                             return await close(ws, "error: author ID not the same as given ID in headers") # TODO: handle better than just closing
                         if event.destination_type == "dmchannel":
-                            dest_type = "dmchannel"
                             query = "INSERT INTO messages (id, authorID, DMChannelID, content, sent_timestamp) VALUES (?,?,?,?,?)"
                         elif event.destination_type == "user":
-                            dest_type = "user"
                             query = "INSERT INTO messages (id, authorID, userID, content, sent_timestamp) VALUES (?,?,?,?,?)"
                         elif event.destination_type == "guild":
-                            dest_type = "guild"
                             query = "INSERT INTO messages (id, authorID, channelID, content, sent_timestamp) VALUES (?,?,?,?,?)"
 
                         _id = id_generator.generate_message_id(request.ctx.db) # Generate the UID 

@@ -45,7 +45,7 @@ class SSE: # TODO: rename to event handler
 	# TODO: Support for multiple connections per client.
 	async def unregister(self, connection_reference): # this is for unregistering clients
 		#await self.lock.acquire() # we cant remove while the push loop is running, or while there are are currently people in queue to register/unregister
-		self.conns.pop(connection_reference)
+		del self.conns[connection_reference] # BUG?: erroring? im not removing it anywhere else, watch for if this errors after changing to del
 		#await self.lock.release()
 
 	async def register_event(self, event: Event): # this is for internally putting an event into the queue 
@@ -65,7 +65,6 @@ class SSE: # TODO: rename to event handler
 			except QueueEmpty:
 				pass
 			else:
-
 				coros = [conn.send(self.format(data)) for conn in self.get_correct_connections(data.destination, data.destination_type, data.conn_ref)] 
 				await gather(*coros) # Send to all connections.
 				print(f"Sent data to {len(coros)} connections.")
