@@ -77,7 +77,7 @@ _redis = redis.RDB
 _hasher = hashing.Hasher()
 _sse = sse.SSE(Queue(), _db)
 _app.add_task(_sse.event_push_loop) # Make sure we run the event pusher, or nobody will be getting events
-# TODO: put SSE in event, its causing CPU usage issues.
+# NOTE: the python WS loop floors a single thread to 100% 24/7.
 
 # Add all the blueprints
 
