@@ -1,6 +1,5 @@
 import secrets
 from random import randint
-import uuid
 
 def generate_user_id(db_conn):
     while 1:

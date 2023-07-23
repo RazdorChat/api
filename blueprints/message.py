@@ -129,7 +129,6 @@ def message_delete(request, thread_type, thread_id, message_id):
 @openapi.response(401, {"application/json" : ops.Unauthorized})
 async def message_send(request, thread_type, thread_id):
     db = request.ctx.db
-    channel_or_user = thread_id # For readability
 
     if thread_type not in valid_dest_types:
         return json({"op": "Invalid thread type."})
@@ -154,7 +153,6 @@ async def message_send(request, thread_type, thread_id):
         if not checks.user_exists(db, thread_id): # User has to exist
             return json({"op": ops.Void.op}, status=404)
         check = db.query_row(user_dest_check, thread_id, data["requester"], thread_id, data["requester"])
-        print(check)
         if not check: # Dms dont exist, make them.
             dm_id = id_generator.generate_dm_id(db)
             db.execute("INSERT INTO DMs (id, UserOneID, UserTwoID) VALUES (?,?,?)", dm_id, data['requester'], thread_id)

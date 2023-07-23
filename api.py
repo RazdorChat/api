@@ -14,14 +14,13 @@ from json import loads
 from os import path, remove
 from asyncio import Queue
 
-# ERROR HANDLING #
+# ERROR HANDLING / LOGGING #
 import traceback
+import logging
 from datetime import datetime
 from time import mktime
 from sanic.response import HTTPResponse
 from sanic.exceptions import NotFound
-
-
 
 # BLUEPRINTS #
 from blueprints.group import api
@@ -110,13 +109,6 @@ async def catch_everything(request, exception):
 # Inject everything needed.
 @_app.on_request
 async def setup_connection(request):
-#    if "docs" in request.route.path:
-#        pass
-#    else:
-#        if not request.headers.betatoken:
-#                return text("Missing betatoken header")
-#        if request.headers.betatoken not in ACCESS_TOKENS:
-#                return text("You do not have access to this pre-beta API or your code is wrong.")
     request.ctx.db = _db
     request.ctx.redis = _redis
     request.ctx.hasher = _hasher
@@ -131,6 +123,8 @@ if _config["api_landing_page"] == True:
     def index(request):
         return html(landing_page)
     
+    # TODO: when webapp is finished, redirect to webapp subdomain.
+    
 
 # Close the DB on exit
 @_app.main_process_stop
@@ -140,5 +134,5 @@ async def close_db(app, loop):
 
 if __name__ == '__main__':
     Extend(_app)
-    _app.go_fast(host='localhost', port=42042,debug=False, access_log=True)
+    _app.go_fast(host='localhost', port=42042,debug=False, access_log=False, motd=_config["selfhosting"]) # Disable MOTD in prod.
     #_app.go_fast(host='0.0.0.0', port=1234, debug=False, access_log=True)

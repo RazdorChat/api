@@ -20,7 +20,6 @@ import time
 @openapi.response(404, {"application/json" : ops.Void})
 def user_get(request, thread_id):
     db = request.ctx.db
-    channel_or_user = thread_id # For readability 
 
     data = db.query_row("SELECT id, _name, discrim FROM users WHERE id = ?" , thread_id) # TODO: logic for if you can get the users information.
     if not data:
