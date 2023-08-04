@@ -1,4 +1,4 @@
 schema = {
-    "enabled" : {"type": "boolean"},
-    "error": {"type": "str"}
+	"enabled" : {"type": "boolean"},
+	"error": {"type": "str"}
 }

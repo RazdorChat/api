@@ -58,10 +58,9 @@ class SSE: # TODO: rename to event handler
 			return None
 
 	async def event_push_loop(self):
-		print("Starting SSE task.")
 		while True:
 			try:
-				data = self.queue.get_nowait() # Get new event if there is one.
+				data = await self.queue.get() # Get new event if there is one.
 			except QueueEmpty:
 				pass
 			else:

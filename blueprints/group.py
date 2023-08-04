@@ -4,13 +4,15 @@ from sanic import Blueprint
 from blueprints.user import blueprint as user
 from blueprints.message import blueprint as message
 from blueprints.sse import blueprint as sse
+from blueprints.nodes import blueprint as nodes
 
 
 
 
 # All of the API
 api = Blueprint.group(message,
-                      user,
-                      sse,
-                      #sse.blueprint,
-                      url_prefix="/api")
+					  user,
+					  sse,
+					  nodes,
+					  #sse.blueprint,
+					  url_prefix="/api")

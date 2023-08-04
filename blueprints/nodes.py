@@ -1,0 +1,91 @@
+from sanic.blueprints import Blueprint
+from sanic.response import json
+
+
+from models import ops
+
+from sanic_ext import openapi
+
+# Create the main blueprint to work with
+blueprint = Blueprint('Node', url_prefix="/nodes")
+
+@blueprint.post("/ws/register", strict_slashes=True)
+@openapi.response(200, {"application/json" : {"op": "Added"}})
+@openapi.response(400, {"application/json" : ops.MissingJson})
+@openapi.response(400, {"application/json" : ops.MissingRequiredJson})
+#@openapi.response(401, {"application/json" : ops.Unauthorized})
+async def register_ws_node(request):
+	data = request.json
+	if not data:
+		return json({"op": ops.MissingJson})
+
+	if not all(k in data for k in ("id","name", "addr", "port", "secret")):
+		return json({"op": ops.MissingRequiredJson.op})
+	
+
+	if not request.app.ctx.redis.get(f"nodes:{data['id']}"):
+		request.app.ctx.redis.set(f"nodes:{data['id']}", f"{data['addr']}:{data['port']}")
+		request.app.ctx.redis.set(f"nodes:available:{data['id']}", f"{data['addr']}:{data['port']}")
+
+	return json({"op": "Added"}, status=200)
+
+
+@blueprint.post("/ws/unregister", strict_slashes=True)
+@openapi.response(200, {"application/json" : {"op": "Removed"}})
+@openapi.response(400, {"application/json" : ops.MissingJson})
+@openapi.response(400, {"application/json" : ops.MissingRequiredJson})
+#@openapi.response(401, {"application/json" : ops.Unauthorized})
+async def unregister_ws_node(request):
+	data = request.json
+	if not data:
+		return json({"op": ops.MissingJson})
+
+	if not all(k in data for k in ("id", "secret")):
+		return json({"op": ops.MissingRequiredJson.op})
+	
+	result = request.app.ctx.redis.get(f"nodes:{data['id']}")
+	
+	if result != None:
+		keys = []
+		keys.extend(request.app.ctx.redis.keys(f"nodes:{data['id']}")) 
+		keys.extend(request.app.ctx.redis.keys(f"nodes:available:{data['id']}"))
+
+		request.app.ctx.redis.delete(*keys)
+		
+	return json({"op": "Removed"}, status=200)
+
+
+@blueprint.post("/ws/update", strict_slashes=True)
+@openapi.response(200, {"application/json" : {"op": "Removed"}})
+@openapi.response(400, {"application/json" : ops.MissingJson})
+@openapi.response(400, {"application/json" : ops.MissingRequiredJson})
+#@openapi.response(401, {"application/json" : ops.Unauthorized})
+async def update_ws_node(request):
+	data = request.json
+	if not data:
+		return json({"op": ops.MissingJson})
+
+	if not all(k in data for k in ("id", "secret")):
+		return json({"op": ops.MissingRequiredJson.op})
+	
+	if request.app.ctx.redis.get(f"nodes:{data['id']}") != None:
+		request.app.ctx.redis.delete(request.app.ctx.redis.keys(f"nodes:available:{data['id']}"))
+
+	return json({"op": "Removed from available nodes"}, status=200)
+
+@blueprint.get("/ws/nodes", strict_slashes=True)
+@openapi.response(200, {"application/json" : {"op": list[str]}})
+@openapi.response(200, {"application/json" : {"op": str}})
+@openapi.response(200, {"application/json" : {"op": ops.Void.op}})
+#@openapi.response(401, {"application/json" : ops.Unauthorized})
+async def get_ws_nodes(request):
+	_temp = request.app.ctx.redis.keys("nodes:available:*")
+	if _temp == None or len(_temp) == 0:
+		return json({"op": ops.Void.op}, status=200)
+
+	result = request.app.ctx.redis.mget(*_temp)
+
+	return json({"op": result}, status=200)
+
+
+

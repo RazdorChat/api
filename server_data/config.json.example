@@ -1,5 +1,8 @@
 {
+    "host": "localhost",
+    "port": 42042,
     "selfhosting": false,
+    "py_ws_drag_n_drop": false,
     "api_landing_page": true,
     "api_landing_page_location": "index.html"
 }

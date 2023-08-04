@@ -2,53 +2,53 @@ from dataclasses import dataclass
 
 @dataclass
 class Void:
-    op = "void"
+	op = "void"
 
 @dataclass
 class MissingJson:
-    op = "Missing JSON."
+	op = "Missing JSON."
 
 @dataclass
 class MissingRequiredJson:
-    op = "Missing required JSON keys."
+	op = "Missing required JSON keys."
 
 @dataclass
 class Unauthorized:
-    op = "Unauthorized."
+	op = "Unauthorized."
 
 @dataclass
 class Deleted:
-    op = "Deleted."
+	op = "Deleted."
 
 @dataclass
 class Sent:
-    op = "Sent."
+	op = "Sent."
 
 @dataclass
 class Done:
-    op = "Done."
+	op = "Done."
 
 @dataclass
 class AlreadyAdded:
-    op = "Already added."
+	op = "Already added."
 
 
 
 @dataclass
 class UserCreated:
-    op = "Created."
-    id: int
+	op = "Created."
+	id: int
 
 @dataclass
 class UserAuthkeyCreated:
-    op = "Created."
-    id: int
-    authentication: str
+	op = "Created."
+	id: int
+	authentication: str
 
 
 
 @dataclass
 class Relationship:
-    id: int
-    type: str
+	id: int
+	type: str
 

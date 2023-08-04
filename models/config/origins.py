@@ -1,3 +1,3 @@
 schema = {
-    "list" : {"type": "list"},
+	"list" : {"type": "list"},
 }
