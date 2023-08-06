@@ -8,6 +8,7 @@ from datetime import datetime
 from json import loads
 from os import path, remove
 from time import mktime
+from typing import TYPE_CHECKING
 
 from sanic import Sanic
 from sanic.exceptions import NotFound, SanicException
@@ -26,6 +27,10 @@ from utils import (  # BUG: LINUX SEGFAULT BECAUSE MARIADB CONNECTOR IS GAY
 )
 from utils.args_utils import parse_args
 from utils.logging_utils import setup_logger
+
+if TYPE_CHECKING:
+    from sanic.request import Request
+    from sanic.response import JSONResponse
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +123,7 @@ if _config["api_landing_page"] == True:
 
 
 @_app.after_server_start
-async def start(app, loop):
+async def start(app: Sanic, loop):
     """Starts the SSE task.
 
     Args:
@@ -136,7 +141,7 @@ async def start(app, loop):
 
 # Error handler
 @_app.exception(Exception)
-async def catch_everything(request, exception):
+async def catch_everything(request: Request, exception: Exception) -> HTTPResponse:
     """Catches all exceptions and logs them.
 
     Args:
@@ -166,7 +171,13 @@ async def catch_everything(request, exception):
 
 # Close the DB on exit
 @_app.main_process_stop
-async def close(app, loop):
+async def close(app: Sanic, loop):
+    """Closes the DB connection and kills the SSE task.
+
+    Args:
+        app (sanic.Sanic): The app to close the task on.
+
+    """
     logger.info("-----    EXITING    -----")
     logger.info("Closing DB connection...")
     _db.pool.close()
