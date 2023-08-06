@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 # Allows for interacting with discord through webhooks, should someone ever find a need for that when self hosting
 import requests
 

@@ -2,14 +2,10 @@ from __future__ import annotations
 
 import json
 import re
-from typing import TYPE_CHECKING
 
 import mariadb
 
 from models.dbconfig import DBConfig
-
-if TYPE_CHECKING:
-    from main import Main
 
 DB_CONFIG_PATH = "server_data/db.json"  # TODO: replace db.json with a more general config.json format
 
@@ -67,7 +63,7 @@ class DBConnection:
 
     # Omit the column name for single column queries
     @staticmethod
-    def map_col(query) -> str | None:
+    def map_col(query: str) -> str | None:
         """Maps the column name to the result of a query.
 
         Args:

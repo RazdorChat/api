@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 from secrets import compare_digest
+from typing import TYPE_CHECKING
 
-valid_events = {"new_message", "edit_message", "delete_message", "friend_request", "friend_request_reply", "friend_remove", "user_edit"}
+if TYPE_CHECKING:
+    from db import DBConnection
+    from redis import Redis
 
 
-def user_exists(db_conn, given_id: int) -> bool:
+VALID_EVENTS = {"new_message", "edit_message", "delete_message", "friend_request", "friend_request_reply", "friend_remove", "user_edit"}
+
+
+def user_exists(db_conn: DBConnection, given_id: int) -> bool:
     """Checks if a user exists.
 
     Args:
@@ -19,15 +25,23 @@ def user_exists(db_conn, given_id: int) -> bool:
         return True
 
 
-def authenticated(
-    given_auth_key: bytearray, real_auth_key: bytearray
-):  # Helper tool to make sure a client has been given an auth key and it matches their real one.
+def authenticated(given_auth_key: bytearray, real_auth_key: bytearray):  # Bit useless imo, just use compare_digest directly.
+    # Helper tool to make sure a client has been given an auth key and it matches their real one.
     return compare_digest(given_auth_key, real_auth_key)
 
 
-def check_impersonation(
-    redis_conn, given_author_id, real_author_id
-):  # fresh from my ass, legacy code, i was high as fuck writing this and i dont even know where i was going
+def check_impersonation(redis_conn: Redis, real_author_id: int | str, given_author_id: int | str):
+    """Checks if a user is impersonating another user. (?)
+
+    Args:
+                        redis_conn (object): Redis connection object
+                        real_author_id (int | str): The ID of the real author
+                        given_author_id (int | str): The ID of the given author
+
+    Returns:
+                        bool: True if impersonating, False if not
+    """
+    # fresh from my ass, legacy code, i was high as fuck writing this and i dont even know where i was going
     real_token = redis_conn.get(real_author_id)
     check_token = redis_conn.get(given_author_id)
     if not real_token or not check_token:
@@ -76,7 +90,7 @@ def is_valid_event(data: str, delim: str = "\n") -> bool | None:
             True | None: Returns True if the string contains a valid event, returns None if not.
     """
     event = data.split(delim, 1)[0].split(":")[1].strip()
-    if event in valid_events:
+    if event in VALID_EVENTS:
         return True
 
 

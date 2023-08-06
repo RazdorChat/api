@@ -1,4 +1,5 @@
 import time
+from typing import TYPE_CHECKING
 
 from sanic.blueprints import Blueprint
 from sanic.response import json
@@ -6,6 +7,10 @@ from sanic_ext import openapi
 
 from models import ops, user
 from utils import checks, id_generator
+
+if TYPE_CHECKING:
+    from sanic.request import Request
+    from sanic.response import JSONResponse
 
 # Create the main blueprint to work with
 blueprint = Blueprint("User", url_prefix="/user")
@@ -16,11 +21,11 @@ blueprint = Blueprint("User", url_prefix="/user")
 @openapi.description("Fetches user information.")
 @openapi.response(200, {"application/json": user.User})
 @openapi.response(404, {"application/json": ops.Void})
-def user_get(request, thread_id):
+def user_get(request: Request, thread_id: int) -> JSONResponse:
     """Fetches user information.
 
     Args:
-        request (sanic.request.Request): The request that caused the exception.
+        request (sanic.request.Request?): The request that caused the exception.
         thread_id (int): The ID of the user to fetch.
 
     Returns:
@@ -44,7 +49,15 @@ def user_get(request, thread_id):
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
 @openapi.response(401, {"application/json": ops.Unauthorized})
-def user_create(request):
+def user_create(request: Request) -> JSONResponse:
+    """Create a user.
+
+    Args:
+        request (sanic.request.Request): The request that caused the invocation of this function.
+
+    Returns:
+        HTTPResponse: The response to send to the client.
+    """
     db = request.app.ctx.db
 
     data = request.json
@@ -82,7 +95,16 @@ def user_create(request):
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
 @openapi.response(401, {"application/json": ops.Unauthorized})
-def user_friend_add(request, thread_id):
+def user_friend_add(request: Request, thread_id: int) -> JSONResponse:
+    """Send friend request to user from ID.
+
+    Args:
+        request (sanic.request.Request): The request that caused the invocation of this function.
+        thread_id (int): The ID of the user to send the friend request to.
+
+    Returns:
+        HTTPResponse: The response to send to the client.
+    """
     db = request.app.ctx.db
     receiver = thread_id  # For readability
 
@@ -118,7 +140,16 @@ def user_friend_add(request, thread_id):
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(404, {"application/json": ops.Void})
 @openapi.response(401, {"application/json": ops.Unauthorized})
-def user_relationships(request, thread_id):
+def user_relationships(request: Request, thread_id: int) -> JSONResponse:
+    """Gets all relationships of a user.
+
+    Args:
+        request (sanic.request.Request): The request that caused the invocation of this function.
+        thread_id (int): The ID of the user to get the relationships of.
+
+    Returns:
+        HTTPResponse: The response to send to the client.
+    """
     db = request.app.ctx.db
     user = thread_id  # For readability
 
@@ -155,7 +186,16 @@ def user_relationships(request, thread_id):
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
 @openapi.response(404, {"application/json": ops.Void})
 @openapi.response(401, {"application/json": ops.Unauthorized})
-def user_friend_accept(request):
+def user_friend_accept(request: Request) -> JSONResponse:
+    """Accept friend requests.
+
+    Args:
+        request (sanic.request.Request): The request that caused the invocation of this function.
+
+    Returns:
+        HTTPResponse: The response to send to the client.
+    """
+
     db = request.app.ctx.db
 
     data = request.json
@@ -187,7 +227,16 @@ def user_friend_accept(request):
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
 @openapi.response(401, {"application/json": ops.Unauthorized})
-def user_delete(request, thread_id):
+def user_delete(request: Request, thread_id: int) -> JSONResponse:
+    """Deletes a user.
+
+    Args:
+        request (sanic.request.Request): The request that caused the invocation of this function.
+        thread_id (int): The ID of the user to delete.
+
+    Returns:
+        HTTPResponse: The response to send to the client.
+    """
     db = request.app.ctx.db
     user = thread_id  # For readability
 
@@ -214,7 +263,16 @@ def user_delete(request, thread_id):
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
 @openapi.response(404, {"application/json": ops.Void})
 @openapi.response(401, {"application/json": ops.Unauthorized})
-def user_authkey_id(request, user_id):
+def user_authkey_id(request: Request, user_id: int) -> JSONResponse:
+    """Generate an auth key for a user based on ID.
+
+    Args:
+        request (sanic.request.Request): The request that caused the invocation of this function.
+        user_id (int): The ID of the user to generate the auth key for.
+
+    Returns:
+        HTTPResponse: The response to send to the client.
+    """
     db = request.app.ctx.db
     _json = request.json
     if not _json:
@@ -248,7 +306,17 @@ def user_authkey_id(request, user_id):
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
 @openapi.response(404, {"application/json": ops.Void})
 @openapi.response(401, {"application/json": ops.Unauthorized})
-def user_authkey(request, username, discriminator):
+def user_authkey(request: Request, username: str, discriminator: str) -> JSONResponse:
+    """Generate an auth key for a user based on username.
+
+    Args:
+        request (sanic.request.Request): The request that caused the invocation of this function.
+        username (str): The username of the user to generate the auth key for.
+        discriminator (str): The discriminator of the user to generate the auth key for.
+
+    Returns:
+        HTTPResponse: The response to send to the client.
+    """
     db = request.app.ctx.db
     _json = request.json
     if not _json:

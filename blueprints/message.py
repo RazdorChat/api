@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sanic.blueprints import Blueprint
 from sanic.response import json
@@ -6,6 +7,10 @@ from sanic_ext import openapi
 
 from models import events, message, ops
 from utils import checks, id_generator
+
+if TYPE_CHECKING:
+    from sanic.request import Request
+    from sanic.response import JSONResponse
 
 # Create the main blueprint to work with
 blueprint = Blueprint("Message", url_prefix="/message")
@@ -32,7 +37,18 @@ user_dest_check = "SELECT id FROM DMs WHERE (UserOneID = ? AND UserTwoID = ?) or
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": {"op": "Invalid thread type."}})  # TODO: convert to ops formatting like normal.
 @openapi.response(404, {"application/json": ops.Void})
-def message_get(request, thread_type, thread_id, message_id):
+def message_get(request: Request, thread_type: str, thread_id: int, message_id: int) -> JSONResponse:
+    """Fetches a message from a channel or DM.
+
+    Args:
+        request (sanic.request.Request): The request that triggered the function.
+        thread_type (str): The type of thread to fetch from
+        thread_id (int): The ID of the thread to fetch from
+
+    Returns:
+        JSONResponse: The response to send to the client.
+    """
+
     db = request.app.ctx.db
 
     _json = request.json
@@ -79,7 +95,16 @@ def message_get(request, thread_type, thread_id, message_id):
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
 @openapi.response(404, {"application/json": ops.Void})
 @openapi.response(401, {"application/json": ops.Unauthorized})
-def message_delete(request, thread_type, thread_id, message_id):
+def message_delete(request: Request, thread_type: str, thread_id: int, message_id: int) -> JSONResponse:
+    """Deletes a message from a channel or DM.
+
+    Args:
+        request (sanic.request.Request): The request that triggered the function.
+        thread_type (str): The type of thread to delete from
+        thread_id (int): The ID of the thread to delete from
+        message_id (int): The ID of the message to delete
+
+    """
     db = request.app.ctx.db
 
     if thread_type not in valid_dest_types:
@@ -120,7 +145,17 @@ def message_delete(request, thread_type, thread_id, message_id):
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
 @openapi.response(401, {"application/json": ops.Unauthorized})
-async def message_send(request, thread_type, thread_id):
+async def message_send(request: Request, thread_type: str, thread_id: int) -> JSONResponse:
+    """Sends a message to a channel or DM.
+
+    Args:
+        request (sanic.request.Request): The request that triggered the function.
+        thread_type (str): The type of thread to send to
+        thread_id (int): The ID of the thread to send to
+
+    Returns:
+        JSONResponse: The response to send to the client.
+    """
     db = request.app.ctx.db
 
     if thread_type not in valid_dest_types:
@@ -200,7 +235,17 @@ async def message_send(request, thread_type, thread_id):
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
 @openapi.response(401, {"application/json": ops.Unauthorized})
 @openapi.response(404, {"application/json": ops.Void})
-def message_mass_get(request, thread_type, thread_id):
+def message_mass_get(request: Request, thread_type: str, thread_id: int) -> JSONResponse:
+    """Fetches messages from a channel or DM.
+
+    Args:
+        request (sanic.request.Request): The request that triggered the function.
+        thread_type (str): The type of thread to fetch from
+        thread_id (int): The ID of the thread to fetch from
+
+    Returns:
+        JSONResponse: The response to send to the client.
+    """
     db = request.app.ctx.db
     if thread_type not in valid_dest_types["mass"]:
         return json({"op": "Invalid thread type."})

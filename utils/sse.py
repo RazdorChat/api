@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import logging
 from asyncio import Lock, Queue, QueueEmpty, gather, sleep
 from json import dumps
 
 from models.events import Event
 from utils.db import DB
+
+logger = logging.getLogger(__name__)
 
 
 class SSE:  # TODO: rename to event handler
@@ -41,13 +44,13 @@ class SSE:  # TODO: rename to event handler
                 connections = self.db.query("SELECT id FROM users WHERE id = ?", destination)
             case _:
                 raise Exception("Something went wrong matching the correct destination.")
-        print(f"Destination: {destination}")
-        print(f"Possible destination connections: {connections}")
+        logger.debug(f"Destination: {destination}")
+        logger.debug(f"Possible destination connections: {connections}")
         to_return = []
         for reference in connections:
             if reference in self.conns and not reference == sending_conn_ref:
                 to_return.append(self.conns[reference])
-        print(f"Online Connections: {to_return}")
+        logger.debug(f"Online Connections: {to_return}")
         return to_return
 
     def format(self, event: Event):
@@ -114,6 +117,6 @@ class SSE:  # TODO: rename to event handler
                     for conn in self.get_correct_connections(data.destination, data.destination_type, data.conn_ref)
                 ]
                 await gather(*coros)  # Send to all connections.
-                print(f"Sent data to {len(coros)} connections.")
+                logger.info(f"Sent data to {len(coros)} connections.")
             finally:
                 await sleep(0)

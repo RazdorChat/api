@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import secrets
 
 from argon2 import PasswordHasher, exceptions

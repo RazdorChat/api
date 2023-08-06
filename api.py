@@ -45,7 +45,7 @@ LOG_CONFIG = {
 
 # Make sure configs exist.
 if not path.isfile("server_data/db.json") or not path.isfile("server_data/origins.json") or not path.isfile("server_data/config.json"):
-    print("Please rename and fill out the example configs in server_data.")
+    logger.critical("Please rename and fill out the example configs in server_data.")
     exit(0)
 
 # Load configs
@@ -73,9 +73,8 @@ if path.isfile("FIRSTRUNDONTTOUCH"):
         except:
             print("Exception validating config (JSON). Please check the configs.")
             exit(0)
-    print("Validated files.")
-    print("Removing first run file.")
     remove("FIRSTRUNDONTTOUCH")
+    logger.info("Validated files and removing first run file.")
     print("Starting...")
 
 
@@ -126,14 +125,13 @@ async def start(app, loop):
             app (sanic.Sanic): The app to start the task on.
             loop (asyncio.AbstractEventLoop): The event loop to use.
     """
-    print("Starting SSE task...")
+    logger.info("Starting SSE task...")
     app.add_task(_sse.event_push_loop, name="sse_loop")  # Make sure we run the event pusher, or nobody will be getting events
     app.add_task(redis.prune_offline_nodes, name="ws_prune_loop")  # Make sure we run the event pusher, or nobody will be getting events
     # NOTE: the python WS loop floors a single thread to 100% 24/7.
     # NOTE: may have been fixed with by not using no_wait in queue
-    print("Started SSE task.")
-    print("\n-----    STARTED    -----\n")
-    print(f"Running @ {_config['host']}:{_config['port']}")
+    logger.info("\n-----    STARTED    -----\n")
+    logger.debug(f"Running @ {_config['host']}:{_config['port']}")
 
 
 # Error handler
@@ -162,44 +160,44 @@ async def catch_everything(request, exception):
             to_write += f"\nwebhook: {str(e)}"  # Probably a bad webhook
             # TODO: describe error more
     log_file.write(to_write)
-    print(to_write)
+    logger.error(to_write)
     return HTTPResponse("Something happened internally, it has been reported and we will fix the error as soon as possible.", 500)
 
 
 # Close the DB on exit
 @_app.main_process_stop
 async def close(app, loop):
-    print("-----    EXITING    -----")
-    print("Closing DB connection...")
+    logger.info("-----    EXITING    -----")
+    logger.info("Closing DB connection...")
     _db.pool.close()
     try:
-        print("Killing SSE task...")
+        logger.info("Killing SSE task...")
         await app.cancel_task("sse_loop")
     except SanicException:  # Task already killed
         pass
-    print("Closing log file...")
+    logger.info("Closing log file...")
     log_file.close()
-    print("Done.")
+    logger.info("Done.")
 
 
 def main():
     try:
-        print("-----    STARTING    -----")
+        logger.info("-----    STARTING    -----")
         if _config["py_ws_drag_n_drop"] == True:
-            print("\nPython WS enabled, assuming correct setup and generating secret.txt")
+            logger.info("\nPython WS enabled, assuming correct setup and generating secret.txt")
             import secrets
 
             with open("ws/secret.txt", "w+") as f:
                 f.write(secrets.token_urlsafe(64))
                 f.close()
             del secrets
-            print("You can now start the WS server at any time.\n")
+            logger.info("You can now start the WS server at any time.\n")
         Extend(_app)
         _app.run(
             host=_config["host"], port=_config["port"], debug=False, access_log=False, motd=_config["selfhosting"]
         )  # Disable MOTD in prod.
     except KeyboardInterrupt:
-        print("Force exited, this may have messed something up.")
+        logger.critical("Force exited, this may have messed something up.")
 
 
 if __name__ == "__main__":
