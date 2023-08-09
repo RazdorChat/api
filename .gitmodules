@@ -1,0 +1,4 @@
+[submodule "sql"]
+	path = sql
+	url = git@github.com:RazdorChat/sql.git
+	branch = feature/better-discrims
