@@ -1,8 +1,9 @@
-from __future__ import annotations
+from utils import db # BUG: LINUX SEGFAULT BECAUSE MARIADB CONNECTOR IS GAY
 
-# ERROR HANDLING / LOGGING #
 import logging
 import traceback
+import context as context  # Custom Context class
+
 from asyncio import Queue
 from datetime import datetime
 from json import loads
@@ -15,11 +16,9 @@ from sanic.exceptions import NotFound, SanicException
 from sanic.response import HTTPResponse, html
 from sanic_ext import Extend
 
-import context as context  # Custom Context class
 from blueprints.group import api
-from utils import (  # BUG: LINUX SEGFAULT BECAUSE MARIADB CONNECTOR IS GAY
+from utils import (
     cors,
-    db,
     discord_legacy_webhook,
     hashing,
     redis,
