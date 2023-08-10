@@ -1,24 +1,33 @@
-# Allows for interacting with discord through webhooks, should someone ever find a need for that when self hosting 
+# Allows for interacting with discord through webhooks, should someone ever find a need for that when self hosting
 import requests
 
 
 class DiscordWebhook:
-	def __init__(self, url: str, username: str):
-		self.url = url
-		self.username = username
+    """A class for interacting with discord through webhooks.
 
-	def send(self, content: str, title: str):
-		data = { # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
-			"username" : self.username
-		}
-		data["embeds"] = [ # https://discordapp.com/developers/docs/resources/channel#embed-object
-			{
-				"description" : content,
-				"title" : title
-			}
-		]
-		result = requests.post(self.url, json = data)
+    Args:
+            url (str): The url of the webhook.
+            username (str): The username of the webhook.
+    """
 
-		result.raise_for_status()
-		
-		return True
+    def __init__(self, url: str, username: str):
+        self.url = url
+        self.username = username
+
+    def send(self, content: str, title: str) -> bool:
+        """Sends a message to the webhook.
+
+        Args:
+                content (str): The content of the message.
+                title (str): The title of the message.
+
+        Returns:
+                bool: True if the message was sent successfully, otherwise it should raise an exception.
+        """
+        data = {"username": self.username}  # https://discordapp.com/developers/docs/resources/webhook#execute-webhook
+        data["embeds"] = [{"description": content, "title": title}]  # https://discordapp.com/developers/docs/resources/channel#embed-object
+        result = requests.post(self.url, json=data)
+
+        result.raise_for_status()
+
+        return True
