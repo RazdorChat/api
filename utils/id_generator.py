@@ -3,7 +3,6 @@ from random import randint
 from typing import Tuple
 from utils.redis import RDB
 from pottery import Redlock
-from dataclasses import dataclass
 
 def generate_user_id(db_conn):
     while 1:
@@ -22,12 +21,12 @@ class UserDiscrimLocks:
 
     def lock_prefix(self, username: str, prefix: str|int) -> bool:
         key = f'username:{username}:discrim_prefix_locks:{prefix}'
-        self.prefix_lock = Redlock(key=key, masters={RDB}, auto_release_time=10)
-        return self.prefix_lock.acquire(timeout=1)
+        self.prefix_lock = Redlock(key=key, masters={RDB}, auto_release_time=1)
+        return self.prefix_lock.acquire()
     def lock_discrim(self, username: str, prefix: str|int, discrim: str|int) -> bool:
         key = f'username:{username}:discrim_locks:{prefix}:{discrim}'
-        self.discrim_lock = Redlock(key=key, masters={RDB}, auto_release_time=10)
-        return self.discrim_lock.acquire(timeout=1)
+        self.discrim_lock = Redlock(key=key, masters={RDB}, auto_release_time=1)
+        return self.discrim_lock.acquire()
     def release_all(self):
         if self.discrim_lock is not None:
             self.discrim_lock.release()
