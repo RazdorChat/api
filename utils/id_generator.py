@@ -21,12 +21,14 @@ class UserDiscrimLocks:
 
     def lock_prefix(self, username: str, prefix: str|int) -> bool:
         key = f'username:{username}:discrim_prefix_locks:{prefix}'
+        # auto_release_time for prefix_lock should be >= (try_random_passes * 2) * (timeout for discrim_lock.acquire())
+        # to minimize the likelihood of a prefix lock expiring before a user account is created
         self.prefix_lock = Redlock(key=key, masters={RDB}, auto_release_time=1)
         return self.prefix_lock.acquire()
     def lock_discrim(self, username: str, prefix: str|int, discrim: str|int) -> bool:
         key = f'username:{username}:discrim_locks:{prefix}:{discrim}'
         self.discrim_lock = Redlock(key=key, masters={RDB}, auto_release_time=1)
-        return self.discrim_lock.acquire()
+        return self.discrim_lock.acquire(timeout=.1)
     def release_all(self):
         if self.discrim_lock is not None:
             self.discrim_lock.release()
