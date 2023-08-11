@@ -45,7 +45,7 @@ with open("server_data/discord_legacy_webhooks.json", "r") as data:
 # Validate configs / Check for first run
 if path.isfile("FIRSTRUNDONTTOUCH"):
     try:
-        input("FIRST RUN, VALIDATING CONFIGS: PRESS ENTER TO CONTINUE OR CRTL+C AND FILL THEM OUT IF YOU HAVNT FILLED THEM OUT.")
+        input("FIRST RUN, VALIDATING CONFIGS: PRESS ENTER TO CONTINUE OR CRTL+C AND FILL THEM OUT IF YOU HAVEN'T ALREADY.")
     except KeyboardInterrupt:
         exit(0)
     from jsonschema import validate
@@ -134,5 +134,9 @@ async def close_db(app, loop):
 
 if __name__ == '__main__':
     Extend(_app)
-    _app.go_fast(host='localhost', port=42042,debug=False, access_log=False, motd=_config["selfhosting"]) # Disable MOTD in prod.
+    # TODO: implement in server_data/config.json
+    port = 42042
+    host = 'localhost'
+    print(f'Listening on {host}:{port}')
+    _app.go_fast(host=host, port=port,debug=False, access_log=False, motd=_config["selfhosting"]) # Disable MOTD in prod.
     #_app.go_fast(host='0.0.0.0', port=1234, debug=False, access_log=True)

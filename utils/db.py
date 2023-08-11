@@ -13,7 +13,7 @@ def mariadb_pool(pool_id: int) -> mariadb.ConnectionPool:
   f = json.load(open(DB_CONFIG_PATH))
   config = DBConfig(
     user=f['user'],
-    password=f['password'],
+    password=f['password'] if 'password' in f else None,
     database=f['database'])
   # Set optional config values
   def set_opt(key: str, t: type):
@@ -49,8 +49,8 @@ class DBConnection:
   # Omit the column name for single column queries
   @staticmethod
   def map_col(query) -> str|None:
-    map_col: str = None
-    re_result = re.search('^select (\w+) from', query, flags=re.IGNORECASE)
+    map_col: str|None = None
+    re_result = re.search('^select (\\w+) from', query, flags=re.IGNORECASE)
     if re_result is not None and len(re_result.groups()) > 0:
       map_col = re_result.groups()[0]
     return map_col

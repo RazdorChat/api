@@ -5,6 +5,6 @@ class DBConfig:
     host = 'localhost'
     port = 3306
     user: str
-    password: str
+    password: str|None
     database: str
     pool_size = 20

@@ -2,3 +2,6 @@ __pycache__/**
 **/__pycache__/**
 sql/testing.sql
 chat-api.zip
+venv
+server_data/*.json
+errors/*
