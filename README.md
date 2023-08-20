@@ -45,7 +45,7 @@ Status
 ## :dart: About ##
 
 Razdor is a innovative new project redesigning the way we communicate in a open way.<br/>
-We belive that open source communication is the only way forward in a time where big corps steal and sell your data<br/>
+We believe that open source communication is the only way forward in a time where big corps steal and sell your data<br/>
 
 ## :sparkles: Features ##
 
