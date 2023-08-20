@@ -1,0 +1,6 @@
+
+sanic[ext]
+jsonschema
+redis
+mariadb
+argon2-cffi
