@@ -64,6 +64,13 @@ The following tools were used in this project:
 
 Before starting :checkered_flag:, you need to have [Git](https://git-scm.com) and [Python](https://python.org/) installed.
 
+Fill out ALL the configs in `server_data`.
+
+Make sure you setup the database (MariaDB) with the schema files in the [Schema](https://github.com/RazdorChat/sql) repo.
+
+
+To use the Python WS, clone the repo inside of the API's folder, and rename it to `ws`; then enable `py_ws_drag_n_drop` in the config.json.
+
 ## :checkered_flag: Starting ##
 
 ```bash
