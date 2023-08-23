@@ -8,9 +8,8 @@ from sanic_ext import openapi
 from models import ops, user
 from utils import checks, id_generator
 
-if TYPE_CHECKING:
-    from sanic.request import Request
-    from sanic.response import JSONResponse
+from sanic.request import Request
+from sanic.response import JSONResponse
 
 # Create the main blueprint to work with
 blueprint = Blueprint("User", url_prefix="/user")
@@ -71,16 +70,14 @@ def user_create(request: Request) -> JSONResponse:
     _discrim = id_generator.generate_user_discrim(db, data["username"])
 
     password_obj = request.app.ctx.hasher.hash_password(data["password"])
+    
+    # Discrim gen is performed last before insertion to minimize time locks are held
+    discrim_prefix, discrim, discrim_locks = id_generator.generate_user_discrim(db, data["username"])
 
-    db.execute(
-        "INSERT INTO users (id, _name, discrim, authentication, salt, created_at) VALUES (?,?,?,?,?,?)",
-        _id,
-        data["username"],
-        _discrim,
-        password_obj.hash,
-        password_obj.salt,
-        time.time(),
-    )
+    db.execute("INSERT INTO users (id, _name, discrim_prefix, discrim, authentication, salt, created_at) VALUES (?,?,?,?,?,?,?)",
+               _id, data["username"], discrim_prefix, discrim, password_obj.hash, password_obj.salt, time.time())
+    # Release locks from discrim gen
+    discrim_locks.release_all()
     return json(
         {"op": ops.UserCreated.op, "id": _id}, status=200
     )  # BUG?: I am getting the wrong ID returned from the Docs. Check if reproducable?

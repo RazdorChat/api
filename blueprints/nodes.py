@@ -6,9 +6,8 @@ from sanic_ext import openapi
 
 from models import ops
 
-if TYPE_CHECKING:
-    from sanic.request import Request
-    from sanic.response import JSONResponse
+from sanic.request import Request
+from sanic.response import JSONResponse
 
 # Create the main blueprint to work with
 blueprint = Blueprint("Node", url_prefix="/nodes")

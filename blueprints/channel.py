@@ -7,10 +7,10 @@ from sanic_ext import openapi
 from models import events, ops
 from utils import id_generator
 
-if TYPE_CHECKING:
-    from sanic.request import Request
-    from sanic.response import JSONResponse
+from sanic.request import Request
+from sanic.response import JSONResponse
 
+if TYPE_CHECKING:
     from context import CustomContext
     from utils.db import DB
 

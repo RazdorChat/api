@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from sanic.blueprints import Blueprint
 from sanic.response import json
@@ -8,9 +7,8 @@ from sanic_ext import openapi
 from models import events, message, ops
 from utils import checks, id_generator
 
-if TYPE_CHECKING:
-    from sanic.request import Request
-    from sanic.response import JSONResponse
+from sanic.request import Request
+from sanic.response import JSONResponse
 
 # Create the main blueprint to work with
 blueprint = Blueprint("Message", url_prefix="/message")

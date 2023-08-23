@@ -9,8 +9,7 @@ from websockets.exceptions import ConnectionClosed
 from models.events import Event
 from utils import checks, id_generator
 
-if TYPE_CHECKING:
-    from sanic.request import Request
+from sanic.request import Request
 
 #
 # THIS IS LEGACY CODE, YOU SHOULD BE USING THE GOLANG WS SERVER
