@@ -1,0 +1,7 @@
+pottery
+sanic[ext]==23.3.0
+redis
+argon2-cffi
+jsonschema
+mariadb
+requests
