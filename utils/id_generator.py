@@ -37,7 +37,7 @@ class UserDiscrimLocks:
         key = f'username:{username}:discrim_prefix_locks:{prefix}'
         # auto_release_time for prefix_lock should be >= (try_random_passes * 2) * (timeout for discrim_lock.acquire())
         # to minimize the likelihood of a prefix lock expiring before a user account is created
-        self.prefix_lock = Redlock(key=key, masters={RDB}, auto_release_time=1)
+        self.prefix_lock = Redlock(key=key, masters={RDB}, auto_release_time=1.5)
         return self.prefix_lock.acquire()
     def lock_discrim(self, username: str, prefix: str|int, discrim: str|int) -> bool:
         key = f'username:{username}:discrim_locks:{prefix}:{discrim}'
@@ -62,7 +62,7 @@ def _generate_user_discrim_prefix(db_conn, username: str) -> Tuple:
         Tuple[int, UserDiscrimLocks]: Discrim prefix and current Locks
     """    
     try_random_passes = 5
-    lock_prefix_threshold = 9900 # This threshold may be a bit low
+    lock_prefix_threshold = 9990
     prefix_count_query = 'SELECT COUNT(discrim) FROM users WHERE _name = ? AND discrim_prefix = ?'
     locks = UserDiscrimLocks()
     # If a 4-digit discrim can be used, return a discrim_prefix of 0 
@@ -121,12 +121,12 @@ def generate_user_discrim(db_conn, username: str) -> Tuple:
     discrim_exists_query = 'SELECT EXISTS(SELECT 1 FROM users WHERE _name = ? AND discrim_prefix = ? AND discrim = ?)'
     # Try to randomly generate discrim
     for _ in range(try_random_passes):
-        discrim = randint(1000, 9999)
+        discrim = randint(0, 9999)
         exists = list(db_conn.query_row(discrim_exists_query, username, prefix, discrim).values())[0]
         if exists==0 and locks.lock_discrim(username, prefix, discrim):
             return prefix, discrim, locks
     # Fallback to sequential sweep
-    for discrim in range(1000, 10_000):
+    for discrim in range(0, 10_000):
         exists = list(db_conn.query_row(discrim_exists_query, username, prefix, discrim).values())[0]
         if exists==0 and locks.lock_discrim(username, prefix, discrim):
             return prefix, discrim, locks
