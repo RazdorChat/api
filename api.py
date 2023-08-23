@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 from sanic import Sanic
 from sanic.exceptions import NotFound, SanicException
 from sanic.response import HTTPResponse, html
+from sanic.request import Request
 from sanic_ext import Extend
 
 from blueprints.group import api
@@ -26,10 +27,6 @@ from utils import (
 )
 from utils.args_utils import parse_args
 from utils.logging_utils import setup_logger
-
-if TYPE_CHECKING:
-    from sanic.request import Request
-    from sanic.response import JSONResponse
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +104,7 @@ if _config["api_landing_page"] == True:
     del _temp
 
     @_app.route("/")
-    def index():
+    def index(request: Request):
         return html(landing_page)
 
     # TODO: when webapp is finished, redirect to webapp subdomain.
@@ -126,7 +123,7 @@ async def start(app: Sanic, loop):
     app.add_task(redis.prune_offline_nodes, name="ws_prune_loop")  # Make sure we run the event pusher, or nobody will be getting events
     # NOTE: the python WS loop floors a single thread to 100% 24/7.
     # NOTE: may have been fixed with by not using no_wait in queue
-    logger.info("\n-----    STARTED    -----\n")
+    logger.info("-----    STARTED    -----")
     logger.debug(f"Running @ {_config['host']}:{_config['port']}")
 
 
@@ -186,7 +183,7 @@ def main():
     try:
         logger.info("-----    STARTING    -----")
         if _config["py_ws_drag_n_drop"] == True:
-            logger.info("\nPython WS enabled, assuming correct setup and generating secret.txt")
+            logger.info("Python WS enabled, assuming correct setup and generating secret.txt")
             import secrets
 
             with open("ws/secret.txt", "w+") as f:
