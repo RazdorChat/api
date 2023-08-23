@@ -33,9 +33,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-ssl = {"cert": "./fullchain.pem", "key": "./privkey.pem"}  # ADD YOUR SSL HERE
-
-
 LOG_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -61,25 +58,20 @@ with open("server_data/discord_legacy_webhooks.json", "r") as data:
     _discord_webhooks = loads(data.read())  # How ironic
 
 
-# Validate configs / Check for first run
-if path.isfile("FIRSTRUNDONTTOUCH"):
-    try:
-        input("FIRST RUN, VALIDATING CONFIGS: PRESS ENTER TO CONTINUE OR CRTL+C AND FILL THEM OUT IF YOU HAVNT FILLED THEM OUT.")
-    except KeyboardInterrupt:
-        exit(0)
+# Validate configs
+def pre_run_validation() -> bool:
     from jsonschema import validate
 
     from models.config import config, origins
 
-    for x in [(_config, config.schema), (origins, origins.schema)]:  # This is bullshit, i know.
+    for x in [(_config, config.schema), (origins, origins.schema)]:
         try:
             validate(instance=x[0], schema=x[1])
         except:
-            print("Exception validating config (JSON). Please check the configs.")
-            exit(0)
-    remove("FIRSTRUNDONTTOUCH")
-    logger.info("Validated files and removing first run file.")
-    print("Starting...")
+            logger.info("Exception validating config (JSON). Please check the configs.")
+            return False
+
+    return True
 
 
 # Webserver
@@ -95,7 +87,7 @@ _app.register_listener(cors.setup_options, "before_server_start")
 try:
     _db = db.DB(db.mariadb_pool(0))  # Create the connection to the DB
 except db.mariadb.OperationalError:
-    print("Error connecting to DB, exiting...")
+    logger.critical("Error connecting to DB, exiting...")
     exit(0)
 _redis = redis.RDB
 _hasher = hashing.Hasher()
@@ -115,7 +107,7 @@ if _config["api_landing_page"] == True:
     del _temp
 
     @_app.route("/")
-    def index(request):
+    def index():
         return html(landing_page)
 
     # TODO: when webapp is finished, redirect to webapp subdomain.
@@ -211,6 +203,11 @@ def main():
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    setup_logger(level=args.log_level, stream_logs=args.console_log)
-    main()
+    if pre_run_validation() == True:
+        logger.info("Validated configs.")
+        logger.info("Starting...")
+        args = parse_args()
+        setup_logger(level=args.log_level, stream_logs=args.console_log)
+        main()
+    else:
+        exit(0)
