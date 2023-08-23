@@ -37,6 +37,10 @@ def user_get(request: Request, thread_id: int) -> JSONResponse:
     )  # TODO: logic for if you can get the users information.
     if not data:
         return json({"op": ops.Void.op}, status=404)
+
+    # Auto pad 3 char discrims
+    data["discrim"] = '%04d' % data["discrim"]
+
     return json({"id": data["id"], "name": data["_name"], "discrim": data["discrim"]}, status=200)
 
 
