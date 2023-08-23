@@ -43,7 +43,7 @@
 ## :dart: About ##
 
 Razdor is a innovative new project, taking on the challenge of making an alternative to discord.<br/>
-We believe that open source communication is the only way forward in a time where big corps steal and sell your data<br/>
+We believe that open source communication is the only way forward in a time where big corps steal and sell your data.<br/>
 
 ## :sparkles: Features ##
 
