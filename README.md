@@ -64,13 +64,6 @@ The following tools were used in this project:
 
 Before starting :checkered_flag:, you need to have [Git](https://git-scm.com) and [Python](https://python.org/) installed.
 
-Fill out ALL the configs in `server_data`.
-
-Make sure you setup the database (MariaDB) with the schema files in the [Schema](https://github.com/RazdorChat/sql) repo.
-
-
-To use the Python WS, clone the repo inside of the API's folder, and rename it to `ws`; then enable `py_ws_drag_n_drop` in the config.json.
-
 ## :checkered_flag: Starting ##
 
 ```bash
@@ -89,7 +82,7 @@ $ python3 api.py
 # Make sure to configure a WS server, Redis and mariaDB!
 ```
 
-Wanna use docker?
+Wanna use docker? Easy.
 
 ```bash
 # Build the image
@@ -97,10 +90,16 @@ docker build -t razdor_api .
 
 # Run the image
 docker run razdor_api
+
+# Make sure you setup MariaDB and Redis, using the DEFAULT ports. The default ports are exposed to the docker container.
 ```
 
-Make sure you setup MariaDB and Redis, using the DEFAULT ports. The default ports are exposed to the docker container.
+Fill out ALL the configs in `server_data`.
 
+Make sure you setup the database (MariaDB) with the schema files in the [Schema](https://github.com/RazdorChat/sql) repo.
+
+
+To use the Python WS, clone the repo inside of the API's folder, and rename it to `ws`; then enable `py_ws_drag_n_drop` in the config.json.
 
 ## :memo: License ##
 
