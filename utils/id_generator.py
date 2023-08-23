@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import secrets
+import logging
+
 from random import randint
 from typing import (
     TYPE_CHECKING, Tuple
@@ -11,6 +13,9 @@ from pottery import Redlock
 if TYPE_CHECKING:
     from db import DBConnection
     from redis import Redis
+
+logger = logging.getLogger(__name__)
+
 
 class NoPrefixesLeft(Exception):
     def __init__(self):
@@ -126,7 +131,7 @@ def generate_user_discrim(db_conn, username: str) -> Tuple:
         if exists==0 and locks.lock_discrim(username, prefix, discrim):
             return prefix, discrim, locks
     # Saturated usernames should be predicted by saturated prefixes
-    # FIXME: log failure to generate discrim
+    logger.error(f"Unable to generate Discriminator with prefix {prefix} and username {username}.")
     return prefix, NoDiscriminatorsLeft(), locks # FIXME; change to nodiscrimsleft
 
 
