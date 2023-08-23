@@ -45,6 +45,7 @@ def user_get(request: Request, thread_id: int) -> JSONResponse:
 @openapi.summary("User create")
 @openapi.description("Create a user.")
 @openapi.response(200, {"application/json": ops.UserCreated})
+@openapi.response(200, {"application/json": ops.UserNoDiscrimsLeft})
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
 @openapi.response(401, {"application/json": ops.Unauthorized})
@@ -67,12 +68,17 @@ def user_create(request: Request) -> JSONResponse:
         return json({"op": ops.MissingRequiredJson.op})
 
     _id = id_generator.generate_user_id(db)
-    _discrim = id_generator.generate_user_discrim(db, data["username"])
 
     password_obj = request.app.ctx.hasher.hash_password(data["password"])
     
     # Discrim gen is performed last before insertion to minimize time locks are held
     discrim_prefix, discrim, discrim_locks = id_generator.generate_user_discrim(db, data["username"])
+    if type(discrim_prefix) == id_generator.NoPrefixesLeft:
+        # Release locks from discrim gen
+        discrim_locks.release_all()
+        return json(
+            {"op": ops.UserNoDiscrimsLeft.op}, status=200
+        )
 
     db.execute("INSERT INTO users (id, _name, discrim_prefix, discrim, authentication, salt, created_at) VALUES (?,?,?,?,?,?,?)",
                _id, data["username"], discrim_prefix, discrim, password_obj.hash, password_obj.salt, time.time())
