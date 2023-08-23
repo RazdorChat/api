@@ -42,7 +42,7 @@
 
 ## :dart: About ##
 
-Razdor is a innovative new project redesigning the way we communicate in a open way.<br/>
+Razdor is a innovative new project, taking on the challenge of making an alternative to discord.<br/>
 We believe that open source communication is the only way forward in a time where big corps steal and sell your data<br/>
 
 ## :sparkles: Features ##
@@ -55,8 +55,8 @@ We believe that open source communication is the only way forward in a time wher
 
 The following tools were used in this project:
 
-- [Python 3.10+](https://python.org)
-- [Sanic](https://sanic.dev)
+- [Python 3.11+](https://python.org)
+- [Sanic 23.3](https://sanic.dev)
 - [Redis 6.0.16+](https://github.com/redis/redis)
 - [MariaDB 10.11.3](https://downloads.mariadb.org/mariadb/10.11.3/)
 
@@ -87,7 +87,8 @@ $ python3 api.py
 This project is under the (license in progress). For more details, see the [LICENSE](LICENSE.md) file.
 
 
-Made with :heart: by <a href="https://github.com/RazdorChat" target="_blank">Babymusk</a>
+README made with :heart: by <a href="https://github.com/RazdorChat" target="_blank">Babymusk</a>
+
 
 &#xa0;
 
