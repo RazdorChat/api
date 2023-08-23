@@ -45,6 +45,9 @@ class UserAuthkeyCreated:
 	id: int
 	authentication: str
 
+@dataclass
+class UserNoDiscrimsLeft:
+	op = "No discrims left for username."
 
 
 @dataclass
