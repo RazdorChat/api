@@ -92,6 +92,8 @@ docker build -t razdor_api .
 docker run razdor_api
 ```
 
+Make sure you setup MariaDB and Redis, using the DEFAULT ports. The default ports are exposed to the docker container.
+
 
 ## :memo: License ##
 
