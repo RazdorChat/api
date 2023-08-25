@@ -14,6 +14,7 @@ blueprint = Blueprint("Node", url_prefix="/nodes")
 
 
 @blueprint.post("/ws/register", strict_slashes=True)
+@openapi.exclude()
 @openapi.response(200, {"application/json": {"op": "Added"}})
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
@@ -42,6 +43,7 @@ async def register_ws_node(request: Request) -> JSONResponse:
 
 
 @blueprint.post("/ws/unregister", strict_slashes=True)
+@openapi.exclude()
 @openapi.response(200, {"application/json": {"op": "Removed"}})
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
@@ -75,6 +77,7 @@ async def unregister_ws_node(request: Request) -> JSONResponse:
 
 
 @blueprint.post("/ws/update", strict_slashes=True)
+@openapi.exclude()
 @openapi.response(200, {"application/json": {"op": "Removed"}})
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
@@ -102,6 +105,7 @@ async def update_ws_node(request: Request) -> JSONResponse:
 
 
 @blueprint.get("/ws/nodes", strict_slashes=True)
+@openapi.description("Gets availible WS nodes. Returns a list of ip:ports you can connect to.")
 @openapi.response(200, {"application/json": {"op": list[str]}})
 @openapi.response(200, {"application/json": {"op": str}})
 @openapi.response(200, {"application/json": {"op": ops.Void.op}})
