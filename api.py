@@ -12,7 +12,7 @@ from time import mktime
 from typing import TYPE_CHECKING
 
 from sanic import Sanic
-from sanic.exceptions import NotFound, SanicException
+from sanic.exceptions import NotFound, SanicException, InvalidUsage
 from sanic.response import HTTPResponse, html
 from sanic.request import Request
 from sanic_ext import Extend
@@ -141,6 +141,8 @@ async def catch_everything(request: Request, exception: Exception) -> HTTPRespon
     # TODO: work on this more, i dont know how sanic errors work and how to isinstance them
     if isinstance(exception, NotFound):
         return HTTPResponse("URL not found.", 404)
+    elif isinstance(exception, InvalidUsage):
+        return HTTPResponse("Invalid usage. Refer to the Documentation for the correct methods to use on URLs, POSTs cannot be sent to GET endpoints, and so on.")
     _traceback = traceback.extract_tb(exception.__traceback__)
     to_write = f"exception: {str(exception)}\ntraceback:\n{str(_traceback)}"
     if _discord_webhooks["enabled"] == True:
