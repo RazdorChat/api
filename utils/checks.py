@@ -10,6 +10,23 @@ if TYPE_CHECKING:
 
 VALID_EVENTS = {"new_message", "edit_message", "delete_message", "friend_request", "friend_request_reply", "friend_remove", "user_edit"}
 
+def is_friends(db_conn: DBConnection, user_1_id: int, user_2_id: int) -> bool:
+    """Checks if two users are friends.
+
+    Args:
+        db_conn (DBConnection): MariaDB Connection object,
+        user_1_id (int): ID of user 1.
+        user_2_id (int): ID of user 2
+
+    Returns:
+        bool: True if users are friends, False if they are not.
+    """    
+    check = db_conn.query_row("SELECT userOneID,userTwoID FROM friends WHERE (userOneID = ? OR userTwoID = ?)", user_1_id, user_2_id)
+    if not check:
+        return False
+    else:
+        return True
+
 
 def user_exists(db_conn: DBConnection, given_id: int) -> bool:
     """Checks if a user exists.
@@ -112,3 +129,15 @@ def is_valid_destination(destination):
             return True
         case _:
             return False
+
+def matches_internal_secret(secret: str, internal_secret: str) -> bool:
+    """Check if a given secret matches the internal secret used for authenticating connections from other instances or WS.
+
+    Args:
+        secret (str): String containing the given secret.
+        internal_secret (str): String containing the actual internal secret.
+
+    Returns:
+        bool: True if matches, else False. 
+    """    
+    return compare_digest(secret, internal_secret)

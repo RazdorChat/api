@@ -1,10 +1,9 @@
-from typing import TYPE_CHECKING
-
 from sanic.blueprints import Blueprint
 from sanic.response import json
 from sanic_ext import openapi
 
 from models import ops
+from utils import checks
 
 from sanic.request import Request
 from sanic.response import JSONResponse
@@ -18,7 +17,7 @@ blueprint = Blueprint("Node", url_prefix="/nodes")
 @openapi.response(200, {"application/json": {"op": "Added"}})
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
-# @openapi.response(401, {"application/json" : ops.Unauthorized})
+@openapi.response(401, {"application/json" : ops.Unauthorized})
 async def register_ws_node(request: Request) -> JSONResponse:
     """Registers a new node to the network.
 
@@ -34,6 +33,9 @@ async def register_ws_node(request: Request) -> JSONResponse:
 
     if not all(k in data for k in ("id", "name", "addr", "port", "secret")):
         return json({"op": ops.MissingRequiredJson.op})
+    
+    if not checks.matches_internal_secret(data["secret"], request.app.ctx.internal_secret):
+        return json({"op": ops.Unauthorized.op})
 
     if not request.app.ctx.redis.get(f"nodes:{data['id']}"):
         request.app.ctx.redis.set(f"nodes:{data['id']}", f"{data['addr']}:{data['port']}")
@@ -47,7 +49,7 @@ async def register_ws_node(request: Request) -> JSONResponse:
 @openapi.response(200, {"application/json": {"op": "Removed"}})
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
-# @openapi.response(401, {"application/json" : ops.Unauthorized})
+@openapi.response(401, {"application/json" : ops.Unauthorized})
 async def unregister_ws_node(request: Request) -> JSONResponse:
     """Unregisters a node from the network.
 
@@ -63,6 +65,9 @@ async def unregister_ws_node(request: Request) -> JSONResponse:
 
     if not all(k in data for k in ("id", "secret")):
         return json({"op": ops.MissingRequiredJson.op})
+
+    if not checks.matches_internal_secret(data["secret"], request.app.ctx.internal_secret):
+        return json({"op": ops.Unauthorized.op})
 
     result = request.app.ctx.redis.get(f"nodes:{data['id']}")
 
@@ -81,7 +86,7 @@ async def unregister_ws_node(request: Request) -> JSONResponse:
 @openapi.response(200, {"application/json": {"op": "Removed"}})
 @openapi.response(400, {"application/json": ops.MissingJson})
 @openapi.response(400, {"application/json": ops.MissingRequiredJson})
-# @openapi.response(401, {"application/json" : ops.Unauthorized})
+@openapi.response(401, {"application/json" : ops.Unauthorized})
 async def update_ws_node(request: Request) -> JSONResponse:
     """Updates a node in the network.
 
@@ -97,6 +102,9 @@ async def update_ws_node(request: Request) -> JSONResponse:
 
     if not all(k in data for k in ("id", "secret")):
         return json({"op": ops.MissingRequiredJson.op})
+
+    if not checks.matches_internal_secret(data["secret"], request.app.ctx.internal_secret):
+        return json({"op": ops.Unauthorized.op})
 
     if request.app.ctx.redis.get(f"nodes:{data['id']}") != None:
         request.app.ctx.redis.delete(request.app.ctx.redis.keys(f"nodes:available:{data['id']}"))

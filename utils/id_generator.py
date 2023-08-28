@@ -216,3 +216,15 @@ def get_session_token(redis_conn: Redis, author_id: int | str) -> str:
     if not data:
         return "fake_data_none"  # what
     return data
+
+
+def generate_secret(size: int = 64) -> str:
+    """Generates a cryptographically secure URL safe string from `size` bytes.
+
+    Args:
+        size (int, optional): Number of bytes used to generate the string. Defaults to 64.
+
+    Returns:
+        str: The URL safe secret.
+    """    
+    return secrets.token_urlsafe(size)
