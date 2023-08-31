@@ -23,7 +23,6 @@ from utils import (
     discord_legacy_webhook,
     hashing,
     redis,
-    sse,
     id_generator
 )
 from utils.args_utils import parse_args
@@ -89,10 +88,9 @@ except db.mariadb.OperationalError:
     exit(0)
 _redis = redis.RDB
 _hasher = hashing.Hasher()
-_sse = sse.SSE(Queue(), _db)
 log_file = open(f"errors/{mktime(datetime.now().timetuple())}.txt", "a+")
 
-_app.ctx = context.CustomContext(_db, _redis, _hasher, _sse, id_generator.generate_secret())
+_app.ctx = context.CustomContext(_db, _redis, _hasher, id_generator.generate_secret())
 
 
 _app.blueprint(api)
@@ -170,8 +168,8 @@ async def close(app: Sanic, loop):
     logger.info("Closing DB connection...")
     _db.pool.close()
     try:
-        logger.info("Killing SSE task...")
-        await app.cancel_task("sse_loop")
+        logger.info("Killing Node task...")
+        await app.cancel_task("ws_prune_loop")
     except SanicException:  # Task already killed
         pass
     logger.info("Closing log file...")

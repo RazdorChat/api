@@ -31,7 +31,7 @@ async def register_ws_node(request: Request) -> JSONResponse:
     if not data:
         return json({"op": ops.MissingJson})
 
-    if not all(k in data for k in ("id", "name", "addr", "port", "secret")):
+    if not all(k in data for k in ("id", "name", "addr", "port", "secret", "hostname")):
         return json({"op": ops.MissingRequiredJson.op})
     
     if not checks.matches_internal_secret(data["secret"], request.app.ctx.internal_secret):
@@ -39,7 +39,7 @@ async def register_ws_node(request: Request) -> JSONResponse:
 
     if not request.app.ctx.redis.get(f"nodes:{data['id']}"):
         request.app.ctx.redis.set(f"nodes:{data['id']}", f"{data['addr']}:{data['port']}")
-        request.app.ctx.redis.set(f"nodes:available:{data['id']}", f"{data['addr']}:{data['port']}")
+        request.app.ctx.redis.set(f"nodes:available:{data['id']}", f"{data['hostname']}")
 
     return json({"op": "Added"}, status=200)
 
