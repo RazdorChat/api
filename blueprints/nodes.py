@@ -31,7 +31,7 @@ async def register_ws_node(request: Request) -> JSONResponse:
     if not data:
         return json({"op": ops.MissingJson})
 
-    if not all(k in data for k in ("id", "name", "addr", "port", "secret", "hostname")):
+    if not all(k in data for k in ("id", "addr", "port", "secret", "hostname")):
         return json({"op": ops.MissingRequiredJson.op})
     
     if not checks.matches_internal_secret(data["secret"], request.app.ctx.internal_secret):
