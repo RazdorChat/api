@@ -3,5 +3,4 @@ class CustomContext(object):
         self.db = db
         self.redis = redis
         self.hasher = hasher
-        self.sse = sse
         self.internal_secret = secret
