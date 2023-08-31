@@ -80,18 +80,26 @@ _app.config.CORS_ORIGINS = _origins
 _app.register_listener(cors.setup_options, "before_server_start")
 
 
-# Create DB, Redis, Hasher, SSE, Log file and nodes Object
+# Create DB, Redis, Hasher, Secret, Log file and Context
 try:
     _db = db.DB(db.mariadb_pool(0))  # Create the connection to the DB
 except db.mariadb.OperationalError:
     logger.critical("Error connecting to DB, exiting...")
     exit(0)
+    
 _redis = redis.RDB
 _hasher = hashing.Hasher()
+_secret = id_generator.generate_secret()
 log_file = open(f"errors/{mktime(datetime.now().timetuple())}.txt", "a+")
+_app.ctx = context.CustomContext(_db, _redis, _hasher, _secret)
 
-_app.ctx = context.CustomContext(_db, _redis, _hasher, id_generator.generate_secret())
-
+# Write secret if python-ws is enabled.
+if _config["py_ws_drag_n_drop"] == True:
+    logger.info("Python WS enabled, assuming correct setup and generating secret.txt")
+    with open("ws/secret.txt", "w+") as f:
+        f.write(_secret)
+        f.close()
+    logger.info("You can now start the WS server at any time.\n")
 
 _app.blueprint(api)
 
@@ -118,7 +126,7 @@ async def start(app: Sanic, loop):
             loop (asyncio.AbstractEventLoop): The event loop to use.
     """
     logger.info("WS Tasks...")
-    app.add_task(redis.prune_offline_nodes, name="ws_prune_loop")  # Make sure we run the event pusher, or nobody will be getting events
+    app.add_task(redis.prune_offline_nodes) # Remove offline nodes automatically.
     logger.info("-----    STARTED    -----")
     logger.debug(f"Running @ {_config['host']}:{_config['port']}")
 
@@ -167,11 +175,6 @@ async def close(app: Sanic, loop):
     logger.info("-----    EXITING    -----")
     logger.info("Closing DB connection...")
     _db.pool.close()
-    try:
-        logger.info("Killing Node task...")
-        await app.cancel_task("ws_prune_loop")
-    except SanicException:  # Task already killed
-        pass
     logger.info("Closing log file...")
     log_file.close()
     logger.info("Done.")
@@ -191,12 +194,6 @@ def main():
 if __name__ == "__main__":
     if pre_run_validation() == True:
         logger.info("Validated configs.")
-        if _config["py_ws_drag_n_drop"] == True:
-            logger.info("Python WS enabled, assuming correct setup and generating secret.txt")
-            with open("ws/secret.txt", "w+") as f:
-                f.write(_app.ctx.internal_secret)
-                f.close()
-            logger.info("You can now start the WS server at any time.\n")
         logger.info("Starting...")
         args = parse_args()
         setup_logger(level=args.log_level, stream_logs=args.console_log)
