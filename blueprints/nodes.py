@@ -113,7 +113,7 @@ async def update_ws_node(request: Request) -> JSONResponse:
 
 
 @blueprint.get("/ws/nodes", strict_slashes=True)
-@openapi.description("Gets availible WS nodes. Returns a list of ip:ports you can connect to.")
+@openapi.description("Gets availible WS nodes. Returns a list of subdomains you can connect to.")
 @openapi.response(200, {"application/json": {"op": list[str]}})
 @openapi.response(200, {"application/json": {"op": str}})
 @openapi.response(200, {"application/json": {"op": ops.Void.op}})
