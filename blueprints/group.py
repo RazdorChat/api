@@ -9,7 +9,6 @@ from blueprints.user import blueprint as user
 api = Blueprint.group(
     message,
     user,
-    sse,
     nodes,
     # sse.blueprint,
     url_prefix="/api",
