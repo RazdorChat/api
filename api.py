@@ -94,9 +94,7 @@ for version_path in base_path.iterdir():
             module = importlib.import_module(mod_path)
 
             # Expect each module to define a Blueprint named `bp`
-            if hasattr(module, "bp"):
-                _app.blueprint(module.bp)
-            if hasattr(module, "blueprint"): # v1 legacy
+            if hasattr(module, "blueprint"): 
                 _app.blueprint(module.bp)
 
 

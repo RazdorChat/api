@@ -11,21 +11,21 @@ from utils import id_generator, checks, hashing
 
 # Dynamically extract version from file path
 VERSION = os.path.basename(os.path.dirname(__file__))  # 'v1'
-bp = Blueprint(f"User_{VERSION}", url_prefix=f"/{VERSION}/user")
+blueprint = Blueprint(f"User_{VERSION}", url_prefix=f"/{VERSION}/user")
 
 import time
 
 
 class UserAPI:
     def __init__(self):
-        bp.add_route(self.user_get, "/<thread_id:int>", methods=["GET"])
-        bp.add_route(self.user_create, "/create", methods=["POST"])
-        bp.add_route(self.user_friend_add, "/<thread_id:int>/add", methods=["POST"])
-        bp.add_route(self.user_relationships, "/<thread_id:int>/relationships", methods=["POST"])
-        bp.add_route(self.user_friend_accept, "/accept", methods=["POST"])
-        bp.add_route(self.user_delete, "/<thread_id:int>/delete", methods=["DELETE"])
-        bp.add_route(self.user_authkey_id, "/<user_id:int>/authkey", methods=["POST"])
-        bp.add_route(self.user_authkey, "/<username:str>/<discriminator:str>/authkey", methods=["POST"])
+        blueprint.add_route(self.user_get, "/<thread_id:int>", methods=["GET"])
+        blueprint.add_route(self.user_create, "/create", methods=["POST"])
+        blueprint.add_route(self.user_friend_add, "/<thread_id:int>/add", methods=["POST"])
+        blueprint.add_route(self.user_relationships, "/<thread_id:int>/relationships", methods=["POST"])
+        blueprint.add_route(self.user_friend_accept, "/accept", methods=["POST"])
+        blueprint.add_route(self.user_delete, "/<thread_id:int>/delete", methods=["DELETE"])
+        blueprint.add_route(self.user_authkey_id, "/<user_id:int>/authkey", methods=["POST"])
+        blueprint.add_route(self.user_authkey, "/<username:str>/<discriminator:str>/authkey", methods=["POST"])
 
 
     @openapi.summary("User get")

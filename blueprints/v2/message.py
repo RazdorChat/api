@@ -13,7 +13,7 @@ from datetime import datetime
 
 # Dynamically extract version from file path
 VERSION = os.path.basename(os.path.dirname(__file__))  # 'v2'
-bp = Blueprint(f"Message_{VERSION}", url_prefix=f"/{VERSION}/message")
+blueprint = Blueprint(f"Message_{VERSION}", url_prefix=f"/{VERSION}/message")
 
 valid_dest_types = { # TODO: change this to something less weird
     "dmchannel": "SELECT * FROM DMChannelmessages WHERE DMChannelID = ? AND id = ?",
@@ -30,10 +30,10 @@ user_dest_check = "SELECT id FROM DMs WHERE (UserOneID = ? AND UserTwoID = ?) or
 
 class MessageAPI:
     def __init__(self):
-        bp.add_route(self.message_get, "/<thread_type:str>/<thread_id:int>/get/<message_id:int>", methods=["GET"])
-        bp.add_route(self.message_delete, "/<thread_type:str>/<thread_id:int>/delete/<message_id:int>", methods=["DELETE"])
-        bp.add_route(self.message_create, "/<thread_type:str>/<thread_id:int>/create", methods=["POST"])
-        bp.add_route(self.message_mass_get, "/<thread_type:str>/<thread_id:int>/messages", methods=["GET"])
+        blueprint.add_route(self.message_get, "/<thread_type:str>/<thread_id:int>/get/<message_id:int>", methods=["GET"])
+        blueprint.add_route(self.message_delete, "/<thread_type:str>/<thread_id:int>/delete/<message_id:int>", methods=["DELETE"])
+        blueprint.add_route(self.message_create, "/<thread_type:str>/<thread_id:int>/create", methods=["POST"])
+        blueprint.add_route(self.message_mass_get, "/<thread_type:str>/<thread_id:int>/messages", methods=["GET"])
 
 
     @openapi.body({"application/json": {"requester": int}})
