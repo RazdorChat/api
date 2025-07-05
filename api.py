@@ -95,7 +95,7 @@ for version_path in base_path.iterdir():
 
             # Expect each module to define a Blueprint named `bp`
             if hasattr(module, "blueprint"): 
-                _app.blueprint(module.bp)
+                _app.blueprint(module.blueprint)
 
 
 # Error handler
