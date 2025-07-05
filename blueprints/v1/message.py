@@ -1,3 +1,4 @@
+import os
 
 from sanic.blueprints import Blueprint
 from sanic.response import json
@@ -11,8 +12,9 @@ from sanic_ext import openapi
 
 from datetime import datetime
 
-# Create the main blueprint to work with
-blueprint = Blueprint('Message', url_prefix="/message")
+# Dynamically extract version from file path
+VERSION = os.path.basename(os.path.dirname(__file__))  # 'v1'
+blueprint = Blueprint(f"Message_{VERSION}", url_prefix=f"/{VERSION}/message")
 
 valid_dest_types = { # TODO: change this to something less weird
     "dmchannel": "SELECT * FROM DMChannelmessages WHERE DMChannelID = ? AND id = ?",

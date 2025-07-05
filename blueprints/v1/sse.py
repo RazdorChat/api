@@ -1,3 +1,5 @@
+import os 
+
 from sanic.blueprints import Blueprint
 from websockets.exceptions import ConnectionClosed
 from datetime import datetime
@@ -9,9 +11,9 @@ from sanic_ext import openapi
 from models.events import Event
 from utils import checks, id_generator
 
-# Create the main blueprint to work with
-blueprint = Blueprint('Events', url_prefix="/events")
-
+# Dynamically extract version from file path
+VERSION = os.path.basename(os.path.dirname(__file__))  # 'v1'
+blueprint = Blueprint(f"Events_{VERSION}", url_prefix=f"/{VERSION}/events")
 
 ## THIS IS LEGACY CODE, YOU SHOULD BE USING THE GOLANG WS SERVER ##
 

@@ -1,3 +1,4 @@
+import os 
 
 from sanic.blueprints import Blueprint
 from sanic.response import json
@@ -8,8 +9,9 @@ from sanic_ext import openapi
 
 from utils import id_generator, checks, hashing
 
-# Create the main blueprint to work with
-blueprint = Blueprint('User', url_prefix="/user")
+# Dynamically extract version from file path
+VERSION = os.path.basename(os.path.dirname(__file__))  # 'v1'
+blueprint = Blueprint(f"User_{VERSION}", url_prefix=f"/{VERSION}/user")
 
 import time
 

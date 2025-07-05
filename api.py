@@ -13,6 +13,9 @@ from sanic_ext import Extend
 from json import loads
 from os import path, remove
 from asyncio import Queue
+import importlib
+import pkgutil
+from pathlib import Path
 
 # ERROR HANDLING / LOGGING #
 import traceback
@@ -22,8 +25,6 @@ from time import mktime
 from sanic.response import HTTPResponse
 from sanic.exceptions import NotFound
 
-# BLUEPRINTS #
-from blueprints.group import api
 
 # UTILS #
 from utils import redis, hashing, sse, cors, discord_legacy_webhook
@@ -80,8 +81,24 @@ _app.add_task(_sse.event_push_loop) # Make sure we run the event pusher, or nobo
 
 # Add all the blueprints
 
-# Api (V1)
-_app.blueprint(api)
+# Api 
+
+base_path = Path(__file__).parent / "blueprints"
+
+for version_path in base_path.iterdir():
+    if version_path.is_dir() and version_path.name.startswith("v"):
+        version_pkg = f"blueprints.{version_path.name}"
+
+        for _, module_name, _ in pkgutil.iter_modules([str(version_path)]):
+            mod_path = f"{version_pkg}.{module_name}"
+            module = importlib.import_module(mod_path)
+
+            # Expect each module to define a Blueprint named `bp`
+            if hasattr(module, "bp"):
+                _app.blueprint(module.bp)
+            if hasattr(module, "blueprint"): # v1 legacy
+                _app.blueprint(module.bp)
+
 
 # Error handler
 @_app.exception(Exception)
