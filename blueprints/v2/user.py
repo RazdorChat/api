@@ -250,3 +250,6 @@ class UserAPI:
         elif check == True: # the hash matches
             key = id_generator.generate_session_token(self, request.ctx.redis, data['id'])
             return json({"op": ops.UserAuthkeyCreated.op, "id": data['id'], "authentication": key})
+        
+# Instantiate and register all routes
+user_api = UserAPI()

@@ -237,3 +237,6 @@ class MessageAPI:
             return json({"op": ops.Void.op}, status=404)
 
         return json({"msgs": messages})
+    
+# Instantiate and register all routes
+message_api = MessageAPI()
